@@ -10,7 +10,7 @@ app.use(cors());
 const CHANNEL_TOKENS = {
   "ebastos14_": "550e8400-e29b-41d4-a716-446655440000",
   "jaciitv": "9b2f6a1d-3e4c-4a8b-9d72-5f1c8e7a6b20",
-  "BotEB14": "4d7a9c3e-1f52-47b8-a6d1-8e2f5c9b0a73"
+  "hholasoynuevo": "4d7a9c3e-1f52-47b8-a6d1-8e2f5c9b0a73"
 };
 
 // 🔥 LIMITE DE ATAQUES POR USUARIO
