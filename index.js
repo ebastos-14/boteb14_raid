@@ -1,6 +1,7 @@
 const tmi = require('tmi.js');
 const express = require('express');
 const cors = require('cors');
+const fetch = require('node-fetch');
 
 const app = express();
 app.use(cors());
@@ -16,17 +17,13 @@ const CHANNEL_TOKENS = {
   "tempcount1": "5a3d8e1c-9b6f-4c27-ae10-7f2b4d9c6a81",
   "tempcount3": "1d7c5a9e-8b3f-4e2a-9c61-0f8b2d7a4e53",
   "tempcount2": "7e2a4c9d-5b1f-4a83-b6d0-9c3e7f1a2b68"
-  
 };
 
-// 🔥 LIMITE DE ATAQUES POR USUARIO
+// ===============================
 const MAX_ATTACKS = 10;
-
-// ⛔ COOL DOWN PARA /start (ANTI SPAM)
 const START_COOLDOWN = 10000;
 let lastStart = {};
 
-// ===============================
 const CHANNELS = Object.keys(CHANNEL_TOKENS);
 
 // ===============================
@@ -39,6 +36,7 @@ function cleanChannel(channel) {
 }
 
 // ===============================
+// 🔥 TWITCH CLIENT
 const client = new tmi.Client({
   options: { debug: true, reconnect: true },
   identity: {
@@ -49,6 +47,39 @@ const client = new tmi.Client({
 });
 
 client.connect();
+
+// ===============================
+// 👥 OBTENER VIEWERS (ONLINE/OFFLINE)
+async function getViewerCount(channel) {
+  try {
+    const res = await fetch(
+      `https://api.twitch.tv/helix/streams?user_login=${channel}`,
+      {
+        headers: {
+          "Client-ID": process.env.TWITCH_CLIENT_ID,
+          "Authorization": `Bearer ${process.env.TWITCH_APP_TOKEN}`
+        }
+      }
+    );
+
+    const data = await res.json();
+
+    // 🔴 OFFLINE
+    if (!data.data || data.data.length === 0) {
+      console.log(`⚫ ${channel} OFFLINE`);
+      return 10;
+    }
+
+    const viewers = data.data[0].viewer_count;
+    console.log(`🟢 ${channel} ONLINE (${viewers} viewers)`);
+
+    return viewers;
+
+  } catch (err) {
+    console.error("Error obteniendo viewers:", err);
+    return 10;
+  }
+}
 
 // ===============================
 let matches = {};
@@ -93,7 +124,8 @@ function getMatch(channel) {
 }
 
 // ===============================
-function startEvent(channelRaw) {
+// 🚀 INICIAR EVENTO
+async function startEvent(channelRaw) {
 
   const channel = cleanChannel(channelRaw);
   const match = getMatch(channel);
@@ -106,7 +138,13 @@ function startEvent(channelRaw) {
   match.damageLog = {};
   match.endTime = 0;
 
-  const players = 10;
+  // 🔥 VIEWERS DINÁMICOS
+  let players = await getViewerCount(channel);
+
+  // 🔒 Limitar dificultad
+  players = Math.max(5, Math.min(players, 50));
+
+  console.log(`👥 Players usados: ${players}`);
 
   match.bossName = bosses[Math.floor(Math.random() * bosses.length)];
   match.bossMaxHP = players;
@@ -149,10 +187,7 @@ function runClock(channelRaw) {
     const sec = Math.ceil(remaining / 1000);
 
     if ([30, 20, 10].includes(sec)) {
-      client.say(
-        normalizeChannel(channel),
-        `T6`
-      );
+      client.say(normalizeChannel(channel), `T6`);
     }
 
     if (sec <= 0) {
@@ -235,16 +270,14 @@ function finishMatch(channelRaw, win) {
 
   const text =
     `T9` +
-    top3.map((p, i) =>
-      `T10`
-    ).join(" - ");
+    top3.map(() => `T10`).join(" - ");
 
   client.say(target, text);
 }
 
 // ===============================
 // 🔐 ENDPOINT SEGURO
-app.get('/start', (req, res) => {
+app.get('/start', async (req, res) => {
 
   const channel = (req.query.channel || "").toLowerCase();
   const token = req.query.token;
@@ -253,17 +286,14 @@ app.get('/start', (req, res) => {
     return res.status(400).end();
   }
 
-  // ❌ Canal no autorizado
   if (!CHANNEL_TOKENS[channel]) {
     return res.status(403).end();
   }
 
-  // ❌ Token incorrecto
   if (CHANNEL_TOKENS[channel] !== token) {
     return res.status(403).end();
   }
 
-  // ⛔ Anti spam
   if (lastStart[channel] && Date.now() - lastStart[channel] < START_COOLDOWN) {
     return res.status(429).send("Cooldown activo");
   }
@@ -271,7 +301,7 @@ app.get('/start', (req, res) => {
   lastStart[channel] = Date.now();
 
   client.join(normalizeChannel(channel)).catch(() => {});
-  startEvent(channel);
+  await startEvent(channel);
 
   res.status(204).end();
 });
@@ -313,5 +343,5 @@ app.get('/state', (req, res) => {
 
 // ===============================
 app.listen(process.env.PORT || 3000, () => {
-  console.log("BOT CON TOKENS POR CANAL LISTO 🔐");
+  console.log("🔥 BOT CON VIEWERS DINÁMICOS LISTO 🔥");
 });
