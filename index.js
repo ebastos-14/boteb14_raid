@@ -1,7 +1,6 @@
 const tmi = require('tmi.js');
 const express = require('express');
 const cors = require('cors');
-const fetch = require('node-fetch');
 
 const app = express();
 app.use(cors());
@@ -10,15 +9,17 @@ app.use(cors());
 // 🔐 TOKENS POR CANAL (MANUAL)
 const CHANNEL_TOKENS = {
   "ebastos14_": "550e8400-e29b-41d4-a716-446655440000",
-  "jaciitv": "c1a9f6d2-8c3a-4f8b-bb1e-9d8e7c6b5a4f",
-  "boteb14": "c1e8a7f2-5b3d-4c9a-91e6-2f7d0b8a6c55"
+  "jaciitv": "c1a9f6d2-8c3a-4f8b-bb1e-9d8e7c6b5a4f"
 };
 
-// ===============================
+// 🔥 LIMITE DE ATAQUES POR USUARIO
 const MAX_ATTACKS = 10;
+
+// ⛔ COOL DOWN PARA /start (ANTI SPAM)
 const START_COOLDOWN = 10000;
 let lastStart = {};
 
+// ===============================
 const CHANNELS = Object.keys(CHANNEL_TOKENS);
 
 // ===============================
@@ -31,7 +32,6 @@ function cleanChannel(channel) {
 }
 
 // ===============================
-// 🔥 TWITCH CLIENT
 const client = new tmi.Client({
   options: { debug: true, reconnect: true },
   identity: {
@@ -42,29 +42,6 @@ const client = new tmi.Client({
 });
 
 client.connect();
-
-// ===============================
-// 🧠 VERIFICAR SI ESTA EN VIVO
-async function isChannelLive(channel) {
-  try {
-    const res = await fetch(
-      `https://api.twitch.tv/helix/streams?user_login=${channel}`,
-      {
-        headers: {
-          "Client-ID": process.env.TWITCH_CLIENT_ID,
-          "Authorization": `Bearer ${process.env.TWITCH_APP_TOKEN}`
-        }
-      }
-    );
-
-    const data = await res.json();
-    return data.data && data.data.length > 0;
-
-  } catch (err) {
-    console.error("Error verificando stream:", err);
-    return false;
-  }
-}
 
 // ===============================
 let matches = {};
@@ -101,8 +78,7 @@ function getMatch(channel) {
 
       interval: null,
 
-      damageLog: {},
-      isLive: false
+      damageLog: {}
     };
   }
 
@@ -110,8 +86,7 @@ function getMatch(channel) {
 }
 
 // ===============================
-// 🚀 INICIAR EVENTO
-async function startEvent(channelRaw) {
+function startEvent(channelRaw) {
 
   const channel = cleanChannel(channelRaw);
   const match = getMatch(channel);
@@ -124,27 +99,15 @@ async function startEvent(channelRaw) {
   match.damageLog = {};
   match.endTime = 0;
 
-  // 🔥 VERIFICAR SI ESTA EN VIVO
-  const live = await isChannelLive(channel);
-  match.isLive = live;
-
-  let players;
-
-  if (live) {
-    players = 10;
-    console.log(`🟢 ${channel} ONLINE`);
-  } else {
-    players = 3;
-    console.log(`⚫ ${channel} OFFLINE`);
-  }
+  const players = 10;
 
   match.bossName = bosses[Math.floor(Math.random() * bosses.length)];
   match.bossMaxHP = 100 + players * 20;
   match.bossHP = match.bossMaxHP;
   match.startTime = Date.now();
 
-  client.say(normalizeChannel(channel), "📢 iniciando...");
-  client.say(normalizeChannel(channel), "💥 Usa !attack para pelear");
+  client.say(normalizeChannel(channel), "📢 Esta por iniciar un evento 📢");
+  client.say(normalizeChannel(channel), "💥 Recuerda participar usando !attack 💥");
 
   setTimeout(() => {
 
@@ -152,7 +115,7 @@ async function startEvent(channelRaw) {
 
     client.say(
       normalizeChannel(channel),
-      `👹 ${match.bossName} ha aparecido (${live ? "LIVE" : "OFFLINE"})`
+      `👹 ${match.bossName} ha aparecido 👹`
     );
 
     runClock(channel);
@@ -181,7 +144,7 @@ function runClock(channelRaw) {
     if ([30, 20, 10].includes(sec)) {
       client.say(
         normalizeChannel(channel),
-        `⏱️ ${sec}s - ❤️ ${Math.floor(match.bossHP)}/${match.bossMaxHP}`
+        `⏱️ ${sec}s - 👹 ${match.bossName} - ❤️ ${Math.floor(match.bossHP)}/${match.bossMaxHP}`
       );
     }
 
@@ -256,25 +219,25 @@ function finishMatch(channelRaw, win) {
   const target = normalizeChannel(channel);
 
   if (win) {
-    client.say(target, `🏆 Victoria contra ${match.bossName}`);
+    client.say(target, `🏆 Victoria - Hemos vencido a 👹 ${match.bossName} 🏆`);
   } else {
-    client.say(target, `☠️ ${match.bossName} escapó`);
+    client.say(target, `☠️ ${match.bossName} ha escapado ☠️`);
   }
 
   const top3 = buildTop3(match);
 
   const text =
-    `📊 ${Object.keys(match.damageLog).length} jugadores - ` +
+    `📊 ${Object.keys(match.damageLog).length} Participantes - ` +
     top3.map((p, i) =>
-      `${["🥇","🥈","🥉"][i]} ${p.user} ${Math.floor(p.maxHit)}`
+      `${["🥇","🥈","🥉"][i]} ${p.user} ✴️ ${Math.floor(p.maxHit)}`
     ).join(" - ");
 
   client.say(target, text);
 }
 
 // ===============================
-// 🔐 ENDPOINT START
-app.get('/start', async (req, res) => {
+// 🔐 ENDPOINT SEGURO
+app.get('/start', (req, res) => {
 
   const channel = (req.query.channel || "").toLowerCase();
   const token = req.query.token;
@@ -283,14 +246,17 @@ app.get('/start', async (req, res) => {
     return res.status(400).end();
   }
 
+  // ❌ Canal no autorizado
   if (!CHANNEL_TOKENS[channel]) {
     return res.status(403).end();
   }
 
+  // ❌ Token incorrecto
   if (CHANNEL_TOKENS[channel] !== token) {
     return res.status(403).end();
   }
 
+  // ⛔ Anti spam
   if (lastStart[channel] && Date.now() - lastStart[channel] < START_COOLDOWN) {
     return res.status(429).send("Cooldown activo");
   }
@@ -298,7 +264,7 @@ app.get('/start', async (req, res) => {
   lastStart[channel] = Date.now();
 
   client.join(normalizeChannel(channel)).catch(() => {});
-  await startEvent(channel);
+  startEvent(channel);
 
   res.status(204).end();
 });
@@ -320,22 +286,25 @@ app.get('/state', (req, res) => {
 
     return res.json({
       active:true,
+      finished:false,
+      bossSpawned: match.bossSpawned,
       boss: match.bossName,
       hp: Math.floor(match.bossHP),
       maxHP: match.bossMaxHP,
-      timeLeft: remaining,
-      live: match.isLive
+      timeLeft: remaining
     });
   }
 
   return res.json({
     active:false,
     finished:true,
-    result: match.bossHP <= 0 ? "win" : "lose"
+    boss: match.bossName,
+    result: match.bossHP <= 0 ? "win" : "lose",
+    endTime: match.endTime
   });
 });
 
 // ===============================
 app.listen(process.env.PORT || 3000, () => {
-  console.log("🔥 BOT LISTO CON VERIFICACION DE STREAM 🔥");
+  console.log("BOT CON TOKENS POR CANAL LISTO 🔐");
 });
