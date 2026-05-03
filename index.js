@@ -113,8 +113,8 @@ function startEvent(channelRaw) {
   match.bossHP = match.bossMaxHP;
   match.startTime = Date.now();
 
-  client.say(normalizeChannel(channel), "Esto es un test de ebastos14_ no se asuste");
-  client.say(normalizeChannel(channel), "");
+  client.say(normalizeChannel(channel), "T1");
+  client.say(normalizeChannel(channel), "T2");
 
   setTimeout(() => {
 
@@ -122,7 +122,7 @@ function startEvent(channelRaw) {
 
     client.say(
       normalizeChannel(channel),
-      ``
+      `T3-5`
     );
 
     runClock(channel);
@@ -151,7 +151,7 @@ function runClock(channelRaw) {
     if ([30, 20, 10].includes(sec)) {
       client.say(
         normalizeChannel(channel),
-        ``
+        `T6`
       );
     }
 
@@ -226,17 +226,17 @@ function finishMatch(channelRaw, win) {
   const target = normalizeChannel(channel);
 
   if (win) {
-    client.say(target, ``);
+    client.say(target, `T7`);
   } else {
-    client.say(target, ``);
+    client.say(target, `T8`);
   }
 
   const top3 = buildTop3(match);
 
   const text =
-    `El test termino` +
+    `T9` +
     top3.map((p, i) =>
-      ``
+      `T10`
     ).join(" - ");
 
   client.say(target, text);
