@@ -113,7 +113,7 @@ function startEvent(channelRaw) {
   match.bossHP = match.bossMaxHP;
   match.startTime = Date.now();
 
-  client.say(normalizeChannel(channel), "");
+  client.say(normalizeChannel(channel), "Esto es un test de ebastos14_ no se asuste");
   client.say(normalizeChannel(channel), "");
 
   setTimeout(() => {
@@ -234,7 +234,7 @@ function finishMatch(channelRaw, win) {
   const top3 = buildTop3(match);
 
   const text =
-    `` +
+    `El test termino` +
     top3.map((p, i) =>
       ``
     ).join(" - ");
