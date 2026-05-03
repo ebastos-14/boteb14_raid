@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+
+<style>
+body {
+  margin:0;
+  font-family: Arial;
+  color:white;
+  overflow:hidden;
+  background: #A9A9A9; /* transparent; */ /* 🔥 TRANSPARENTE */
+}
+
+/* CONTENEDOR */
+#screen {
+  width:100vw;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+
+/* TEXTOS */
+.text {
+  font-size:20px;
+  margin:4px 0;
+  text-shadow:
+    0 0 5px rgba(255,255,255,0.6),
+    0 0 10px rgba(255,255,255,0.3);
+}
+
+/* TEXTO DORADO */
+.introTextAnim {
+  color:#FFA500;
+  text-shadow:
+    0 0 5px #FFD700,
+    0 0 10px #FFD700,
+    0 0 20px #FFD700;
+  animation: introFade 0.6s ease-out;
+}
+
+@keyframes introFade {
+  from { opacity:0; transform: translateY(-15px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+/* SLOT */
+.slot {
+  width:300px;
+  height:300px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:0 auto;
+  position:relative;
+}
+
+/* PORTAL */
+#portalWrapper {
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  animation: spin 6s linear infinite;
+}
+
+#portalImg {
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  animation: pulse 2s ease-in-out infinite,
+             glowPortal 2s ease-in-out infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+@keyframes glowPortal {
+  0% { filter: drop-shadow(0 0 5px #ffebba); }
+  50% { filter: drop-shadow(0 0 20px #ffebba); }
+  100% { filter: drop-shadow(0 0 5px #ffebba); }
+}
+
+/* =========================
+   BARRA DE VIDA
+========================= */
+
+#bar {
+  width:260px;
+  height:12px;
+  margin:10px auto;
+  position:relative;
+  background:#2a0000;
+  border:2px solid #999;
+  overflow:hidden;
+}
+
+#hp {
+  position:absolute;
+  top:0;
+  left:0;
+  height:100%;
+  width:100%;
+  background:#ff0000;
+  transition:width 0.3s linear;
+  z-index:1;
+}
+
+#segments {
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  display:flex;
+  z-index:2;
+}
+
+.segment {
+  flex:1;
+  position:relative;
+}
+
+.segment:not(:last-child)::after {
+  content:"";
+  position:absolute;
+  top:0;
+  right:0;
+  width:2px;
+  height:100%;
+  background:#000;
+}
+
+/* ========================= */
+
+#hpText {
+  margin-top:5px;
+}
+
+/* BOSS */
+#bossName {
+  font-size:24px;
+  margin:8px 0;
+}
+
+#bossArea {
+  width:300px;
+  height:300px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+}
+
+#bossImg {
+  max-width:100%;
+  max-height:100%;
+  object-fit:contain;
+}
+
+/* TIMERS */
+#timer1, #timer2, #finalTimer {
+  font-size:18px;
+}
+
+/* DAÑO */
+.damage {
+  position:absolute;
+  color:#ff4444;
+  font-weight:bold;
+  font-size:22px;
+  pointer-events:none;
+  animation: floatUp 1s ease-out forwards;
+  text-shadow:0 0 6px black;
+}
+
+@keyframes floatUp {
+  0% { opacity:1; transform: translate(-50%,0); }
+  100% { opacity:0; transform: translate(-50%,-60px); }
+}
+
+/* SHAKE */
+.shake {
+  animation: shakeAnim 0.25s linear;
+}
+
+@keyframes shakeAnim {
+  0% { transform:translate(0,0); }
+  50% { transform:translate(4px,-2px); }
+  100% { transform:translate(0,0); }
+}
+
+/* FINAL */
+#end {
+  position:absolute;
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: rgba(0,0,0,0.7);
+}
+
+#endContainer {
+  position:relative;
+  text-align:center;
+}
+
+#endBoss {
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%, -50%);
+  width:400px;
+  opacity:0.15;
+  filter: blur(2px) brightness(0.7);
+  pointer-events:none;
+}
+
+#result {
+  font-size:40px;
+}
+
+.win { color:#00ff99; }
+.lose { color:#ff4444; }
+
+</style>
+</head>
+
+<body>
+
+<div id="screen">
+
+<!-- INTRO -->
+<div id="intro">
+  <div class="text introTextAnim">📢 Esta por iniciar un evento 📢</div>
+  <div class="text">💥 Recuerda participar usando !attack 💥</div>
+
+  <div class="slot">
+    <div id="portalWrapper">
+      <img id="portalImg" src="./portal.png">
+    </div>
+  </div>
+
+  <div id="timer1"></div>
+</div>
+
+<!-- BOSS -->
+<div id="boss" style="display:none">
+  <div class="text introTextAnim" id="bossName"></div>
+
+  <div id="bar">
+    <div id="hp"></div>
+    <div id="segments">
+      <div class="segment"></div>
+      <div class="segment"></div>
+      <div class="segment"></div>
+      <div class="segment"></div>
+      <div class="segment"></div>
+    </div>
+  </div>
+
+  <div id="hpText"></div>
+
+  <div id="bossArea">
+    <img id="bossImg">
+  </div>
+
+  <div id="timer2"></div>
+</div>
+
+<!-- FINAL -->
+<div id="end" style="display:none">
+  <div id="endContainer">
+    <img id="endBoss">
+    <div id="result"></div>
+    <div id="resultSub"></div>
+    <div id="finalTimer"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const params=new URLSearchParams(location.search);
+let channel=(params.get("channel")||"").toLowerCase();
+
+const bossSprites={
+"Constructor":"./Constructor.png",
+"Sacerdotiza Avaloniana":"./SacerdotizaAvaloniana.png",
+"Basilisco":"./Basilisco.png",
+"Capitán Caballero":"./CapitanCaballero.png",
+"Reina Danzante":"./ReinaDanzante.png",
+"Sir Bedivere":"./SirBedivere.png"
+};
+
+let lastHP=null;
+let finalRunning=false;
+
+function spawnDamage(d){
+const el=document.createElement("div");
+el.className="damage";
+el.innerText=Math.floor(d);
+el.style.left=`${50+Math.random()*20-10}%`;
+el.style.top=`${50+Math.random()*20-10}%`;
+bossArea.appendChild(el);
+setTimeout(()=>el.remove(),1000);
+}
+
+function shakeBoss(){
+bossImg.classList.remove("shake");
+void bossImg.offsetWidth;
+bossImg.classList.add("shake");
+}
+
+setInterval(async()=>{
+const res=await fetch(`https://game-bot-hf9v.onrender.com/state?channel=${channel}&t=${Date.now()}`);
+const data=await res.json();
+
+if(!data.active&&!data.finished){
+intro.style.display="block";
+boss.style.display="none";
+end.style.display="none";
+return;
+}
+
+if(data.active&&data.bossSpawned){
+
+intro.style.display="none";
+boss.style.display="block";
+
+if(lastHP&&data.hp<lastHP){
+spawnDamage(lastHP-data.hp);
+shakeBoss();
+}
+
+lastHP=data.hp;
+
+bossName.innerText=data.boss;
+hp.style.width=(data.hp/data.maxHP)*100+"%";
+hpText.innerText=`${data.hp}/${data.maxHP}`;
+bossImg.src=bossSprites[data.boss];
+timer2.innerText=`⏱️ ${data.timeLeft}`;
+}
+
+if(data.finished){
+intro.style.display="none";
+boss.style.display="none";
+end.style.display="flex";
+
+endBoss.src=bossSprites[data.boss];
+
+if(data.result==="win"){
+result.innerText="🏆 VICTORIA 🏆";
+resultSub.innerText=`Hemos vencido a ${data.boss}`;
+result.className="win";
+}else{
+result.innerText="☠️ DERROTA ☠️";
+resultSub.innerText=`${data.boss} ha logrado escapar`;
+result.className="lose";
+}
+
+if(!finalRunning){
+finalRunning=true;
+let t=3;
+const i=setInterval(()=>{
+finalTimer.innerText=`⏱️ ${t}`;
+t--;
+if(t<0){
+clearInterval(i);
+location.href=`./blank.html?channel=${channel}`;
+}
+},1000);
+}
+}
+
+},500);
+</script>
+
+</body>
+</html>
