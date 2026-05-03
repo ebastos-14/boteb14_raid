@@ -326,7 +326,7 @@ bossImg.classList.add("shake");
 }
 
 setInterval(async()=>{
-const res=await fetch(`https://game-bot-hf9v.onrender.com/state?channel=${channel}&t=${Date.now()}`);
+const res=await fetch(`https://boteb14-raid.onrender.com/state?channel=${channel}&t=${Date.now()}`);
 const data=await res.json();
 
 if(!data.active&&!data.finished){
