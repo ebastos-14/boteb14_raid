@@ -109,7 +109,7 @@ function startEvent(channelRaw) {
   const players = 10;
 
   match.bossName = bosses[Math.floor(Math.random() * bosses.length)];
-  match.bossMaxHP = 100 + players * 20;
+  match.bossMaxHP = players;
   match.bossHP = match.bossMaxHP;
   match.startTime = Date.now();
 
