@@ -107,8 +107,8 @@ function startEvent(channelRaw) {
   match.bossHP = match.bossMaxHP;
   match.startTime = Date.now();
 
-  client.say(normalizeChannel(channel), "📢 Esta por iniciar un evento 📢");
-  client.say(normalizeChannel(channel), "💥 Recuerda participar usando !attack 💥");
+  client.say(normalizeChannel(channel), "");
+  client.say(normalizeChannel(channel), "");
 
   setTimeout(() => {
 
@@ -116,7 +116,7 @@ function startEvent(channelRaw) {
 
     client.say(
       normalizeChannel(channel),
-      `👹 ${match.bossName} ha aparecido 👹`
+      ``
     );
 
     runClock(channel);
@@ -145,7 +145,7 @@ function runClock(channelRaw) {
     if ([30, 20, 10].includes(sec)) {
       client.say(
         normalizeChannel(channel),
-        `⏱️ ${sec}s - 👹 ${match.bossName} - ❤️ ${Math.floor(match.bossHP)}/${match.bossMaxHP}`
+        ``
       );
     }
 
@@ -220,17 +220,17 @@ function finishMatch(channelRaw, win) {
   const target = normalizeChannel(channel);
 
   if (win) {
-    client.say(target, `🏆 Victoria - Hemos vencido a 👹 ${match.bossName} 🏆`);
+    client.say(target, ``);
   } else {
-    client.say(target, `☠️ ${match.bossName} ha escapado ☠️`);
+    client.say(target, ``);
   }
 
   const top3 = buildTop3(match);
 
   const text =
-    `📊 ${Object.keys(match.damageLog).length} Participantes - ` +
+    `` +
     top3.map((p, i) =>
-      `${["🥇","🥈","🥉"][i]} ${p.user} ✴️ ${Math.floor(p.maxHit)}`
+      ``
     ).join(" - ");
 
   client.say(target, text);
