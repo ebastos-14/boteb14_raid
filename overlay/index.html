@@ -301,7 +301,7 @@ body {
 
 <!-- INTRO -->
 <div id="intro">
-  <div class="text textCian">📢 Estable v3 - zoomin boss - v2 📢</div>
+  <div class="text textCian">📢 Estable v4 - shake fix test 1 📢</div>
   <div class="text">💥 Recuerda participar usando !attack 💥</div>
 
   <div class="slot">
@@ -379,10 +379,12 @@ bossArea.appendChild(el);
 setTimeout(()=>el.remove(),1000);
 }
 
-function shakeBoss(){
-bossImg.classList.remove("shake");
-void bossImg.offsetWidth;
-bossImg.classList.add("shake");
+function shakeBoss() {
+  bossImg.classList.remove("shake");
+
+  requestAnimationFrame(() => {
+    bossImg.classList.add("shake");
+  });
 }
 
 setInterval(async()=>{
@@ -401,7 +403,7 @@ if(data.active&&data.bossSpawned){
 intro.style.display="none";
 boss.style.display="block";
 
-if(lastHP&&data.hp<lastHP){
+if (lastHP !== null && data.hp < lastHP) {
 spawnDamage(lastHP-data.hp);
 shakeBoss();
 }
