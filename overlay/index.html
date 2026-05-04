@@ -33,7 +33,16 @@ body {
     0 0 6px rgba(150,150,150,0.3);
 }
 
-/* TEXTO DORADO */
+/* TEXTO CIAN */
+.textCian {
+  color:#51D1F6;
+  text-shadow:
+    0 0 5px #00FFFF,
+    0 0 10px #00FFFF,
+    0 0 20px #00FFFF;
+}
+
+  /* TEXTO DORADO */
 .textGold {
   color:#FFA500;
   text-shadow:
@@ -263,7 +272,7 @@ body {
 
 <!-- INTRO -->
 <div id="intro">
-  <div class="text textGold">📢 Esta por iniciar un evento 📢</div>
+  <div class="text textCian">📢 Esta por iniciar un evento 📢</div>
   <div class="text">💥 Recuerda participar usando !attack 💥</div>
 
   <div class="slot">
@@ -276,7 +285,7 @@ body {
 </div>
 
 <!-- BOSS -->
-<div class="introTextAnim" id="boss" style="display:none">
+<div class="text introAnim" id="boss" style="display:none">
   <div class="textGold" id="bossName"></div>
 
   <div id="bar">
