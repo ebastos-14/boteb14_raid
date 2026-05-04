@@ -7,24 +7,25 @@ const app = express();
 app.use(cors());
 
 // ===============================
-// 🔐 TOKENS POR CANAL (MANUAL)
+// 🔐 TOKENS POR CANAL
 const CHANNEL_TOKENS = {
   "ebastos14_": "550e8400-e29b-41d4-a716-446655440000",
   "jaciitv": "9b2f6a1d-3e4c-4a8b-9d72-5f1c8e7a6b20",
   "hholasoynuevo": "4d7a9c3e-1f52-47b8-a6d1-8e2f5c9b0a73",
   "boteb14": "8c1e2f7a-6b4d-4a9c-8f21-3d5e7b0a9c62",
-  "mrryden": "2f9b6c1d-3a7e-4d8f-b521-6c0a9e3b7d45",
-  "tempcount1": "5a3d8e1c-9b6f-4c27-ae10-7f2b4d9c6a81",
-  "tempcount3": "1d7c5a9e-8b3f-4e2a-9c61-0f8b2d7a4e53",
-  "tempcount2": "7e2a4c9d-5b1f-4a83-b6d0-9c3e7f1a2b68"
+  "mrryden": "2f9b6c1d-3a7e-4d8f-b521-6c0a9e3b7d45"
 };
 
 // ===============================
-const MAX_ATTACKS = 10;
+const MAX_ATTACKS = 1; // 👈 PRODUCCIÓN
 const START_COOLDOWN = 10000;
 let lastStart = {};
 
 const CHANNELS = Object.keys(CHANNEL_TOKENS);
+
+// ⚙️ CONFIG BALANCE
+const ACTIVE_PERCENT = 0.3;
+const AVG_DAMAGE = 15;
 
 // ===============================
 function normalizeChannel(channel) {
@@ -36,7 +37,6 @@ function cleanChannel(channel) {
 }
 
 // ===============================
-// 🔥 TWITCH CLIENT
 const client = new tmi.Client({
   options: { debug: true, reconnect: true },
   identity: {
@@ -49,8 +49,8 @@ const client = new tmi.Client({
 client.connect();
 
 // ===============================
-// 👥 VIEWERS EXACTOS (ONLINE/OFFLINE)
-async function getViewerCount(channel) {
+// 🔴 / 🟢 STREAM DATA
+async function getStreamData(channel) {
   try {
     const res = await fetch(
       `https://api.twitch.tv/helix/streams?user_login=${channel}`,
@@ -64,17 +64,18 @@ async function getViewerCount(channel) {
 
     const data = await res.json();
 
-    // OFFLINE
     if (!data.data || data.data.length === 0) {
-      return 10;
+      return { live: false, viewers: 0 };
     }
 
-    // ONLINE → valor exacto
-    return data.data[0].viewer_count;
+    return {
+      live: true,
+      viewers: data.data[0].viewer_count
+    };
 
   } catch (err) {
-    console.error("Error viewers:", err);
-    return 10;
+    console.error(err);
+    return { live: false, viewers: 0 };
   }
 }
 
@@ -103,16 +104,12 @@ function getMatch(channel) {
       active: false,
       finished: false,
       bossSpawned: false,
-
       bossName: "",
       bossHP: 0,
       bossMaxHP: 0,
-
       startTime: 0,
       endTime: 0,
-
       interval: null,
-
       damageLog: {}
     };
   }
@@ -121,7 +118,7 @@ function getMatch(channel) {
 }
 
 // ===============================
-// 🚀 INICIAR EVENTO
+// 🚀 START EVENT
 async function startEvent(channelRaw) {
 
   const channel = cleanChannel(channelRaw);
@@ -135,30 +132,36 @@ async function startEvent(channelRaw) {
   match.damageLog = {};
   match.endTime = 0;
 
-  // 👥 PLAYERS DINÁMICOS (EXACTOS)
-  const players = await getViewerCount(channel);
+  const stream = await getStreamData(channel);
 
-  console.log("PLAYERS =", players);
+  let hp;
+
+  if (!stream.live) {
+    hp = 100; // 🔴 OFFLINE
+    console.log(`OFFLINE → HP ${hp}`);
+  } else {
+    const activePlayers = stream.viewers * ACTIVE_PERCENT;
+
+    hp = activePlayers * AVG_DAMAGE;
+
+    // 🔢 Redondeo a centenas
+    hp = Math.ceil(hp / 100) * 100;
+
+    console.log(`ONLINE → viewers:${stream.viewers} HP:${hp}`);
+  }
 
   match.bossName = bosses[Math.floor(Math.random() * bosses.length)];
-  match.bossMaxHP = players;
-  match.bossHP = players;
+  match.bossMaxHP = hp;
+  match.bossHP = hp;
   match.startTime = Date.now();
 
-  client.say(normalizeChannel(channel), "📢 Esta por iniciar un evento 📢");
-  client.say(normalizeChannel(channel), "💥 Recuerda participar usando !attack 💥");
+  client.say(normalizeChannel(channel), "⚔️ Evento iniciado!");
+  client.say(normalizeChannel(channel), "💥 Usa !attack");
 
   setTimeout(() => {
-
     match.bossSpawned = true;
-
-    client.say(
-      normalizeChannel(channel),
-      `👹 ${match.bossName} ha aparecido 👹`
-    );
-
+    client.say(normalizeChannel(channel), `👹 ${match.bossName} apareció con ${hp} HP`);
     runClock(channel);
-
   }, BOSS_DELAY);
 
   return true;
@@ -181,8 +184,10 @@ function runClock(channelRaw) {
     const sec = Math.ceil(remaining / 1000);
 
     if ([30, 20, 10].includes(sec)) {
-      client.say(normalizeChannel(channel),
-                 `⏱️ ${sec}s - 👹 ${match.bossName} - ❤️ ${Math.floor(match.bossHP)}/${match.bossMaxHP}`);
+      client.say(
+        normalizeChannel(channel),
+        `⏱️ ${sec}s - ❤️ ${Math.floor(match.bossHP)}/${match.bossMaxHP}`
+      );
     }
 
     if (sec <= 0) {
@@ -204,7 +209,7 @@ client.on('message', (channel, tags, message, self) => {
   if (!match.active || match.finished || !match.bossSpawned) return;
 
   const msg = message.toLowerCase().trim();
-  if (msg !== '!attack' && msg !== '!a') return;
+  if (msg !== '!attack') return;
 
   const user = tags.username;
 
@@ -212,7 +217,8 @@ client.on('message', (channel, tags, message, self) => {
 
   if (match.damageLog[user].length >= MAX_ATTACKS) return;
 
-  const dmg = (10 + 5) * (0.5 + Math.random());
+  // 🔥 DAÑO RANDOM
+  const dmg = Math.floor((10 + 5) * (0.5 + Math.random()));
 
   match.damageLog[user].push(dmg);
   match.bossHP -= dmg;
@@ -228,12 +234,10 @@ function buildTop3(match) {
 
   const entries = Object.entries(match.damageLog);
 
-  const sorted = entries.map(([user, hits]) => ({
+  return entries.map(([user, hits]) => ({
     user,
     maxHit: Math.max(...hits)
-  })).sort((a, b) => b.maxHit - a.maxHit);
-
-  return sorted.slice(0, 3);
+  })).sort((a, b) => b.maxHit - a.maxHit).slice(0, 3);
 }
 
 // ===============================
@@ -246,53 +250,34 @@ function finishMatch(channelRaw, win) {
 
   match.active = false;
   match.finished = true;
-  match.endTime = Date.now();
 
-  if (match.interval) {
-    clearInterval(match.interval);
-    match.interval = null;
-  }
+  if (match.interval) clearInterval(match.interval);
 
   const target = normalizeChannel(channel);
 
-  if (win) {
-    client.say(target, `🏆 Victoria - Hemos vencido a 👹 ${match.bossName} 🏆`);
-  } else {
-    client.say(target, `☠️ ${match.bossName} ha escapado ☠️`);
-  }
+  client.say(target, win ? "🏆 Victoria!" : "☠️ Derrota!");
 
   const top3 = buildTop3(match);
 
-  const text =
-    `📊 ${Object.keys(match.damageLog).length} Participantes - ` +
-    top3.map((p, i) =>
-      `${["🥇","🥈","🥉"][i]} ${p.user} ✴️ ${Math.floor(p.maxHit)}`
-    ).join(" - ");
+  const text = top3.map((p, i) =>
+    `${["🥇","🥈","🥉"][i]} ${p.user} (${Math.floor(p.maxHit)})`
+  ).join(" - ");
 
   client.say(target, text);
 }
 
 // ===============================
-// 🔐 ENDPOINT SEGURO
 app.get('/start', async (req, res) => {
 
   const channel = (req.query.channel || "").toLowerCase();
   const token = req.query.token;
 
-  if (!channel || !token) {
-    return res.status(400).end();
-  }
-
-  if (!CHANNEL_TOKENS[channel]) {
-    return res.status(403).end();
-  }
-
-  if (CHANNEL_TOKENS[channel] !== token) {
+  if (!CHANNEL_TOKENS[channel] || CHANNEL_TOKENS[channel] !== token) {
     return res.status(403).end();
   }
 
   if (lastStart[channel] && Date.now() - lastStart[channel] < START_COOLDOWN) {
-    return res.status(429).send("Cooldown activo");
+    return res.status(429).send("Cooldown");
   }
 
   lastStart[channel] = Date.now();
@@ -304,41 +289,6 @@ app.get('/start', async (req, res) => {
 });
 
 // ===============================
-app.get('/state', (req, res) => {
-
-  const channel = cleanChannel(req.query.channel || "");
-  const match = matches[channel];
-
-  if (!match) {
-    return res.json({ active:false, finished:false });
-  }
-
-  if (match.active) {
-
-    const elapsed = Date.now() - match.startTime;
-    const remaining = Math.max(0, 45 - Math.floor(elapsed / 1000));
-
-    return res.json({
-      active:true,
-      finished:false,
-      bossSpawned: match.bossSpawned,
-      boss: match.bossName,
-      hp: Math.floor(match.bossHP),
-      maxHP: match.bossMaxHP,
-      timeLeft: remaining
-    });
-  }
-
-  return res.json({
-    active:false,
-    finished:true,
-    boss: match.bossName,
-    result: match.bossHP <= 0 ? "win" : "lose",
-    endTime: match.endTime
-  });
-});
-
-// ===============================
 app.listen(process.env.PORT || 3000, () => {
-  console.log("🔥 BOT CON VIEWERS EXACTOS LISTO 🔥");
+  console.log("🔥 BOT BALANCEADO LISTO 🔥");
 });
