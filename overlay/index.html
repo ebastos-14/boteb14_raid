@@ -341,99 +341,167 @@ body {
 </div>
 
 <script>
-const params=new URLSearchParams(location.search);
-let channel=(params.get("channel")||"").toLowerCase();
+const params = new URLSearchParams(location.search);
+let channel = (params.get("channel") || "").toLowerCase();
 
-const bossSprites={
-"Constructor":"./Constructor.png",
-"Sacerdotiza Avaloniana":"./SacerdotizaAvaloniana.png",
-"Basilisco":"./Basilisco.png",
-"Capitán Caballero":"./CapitanCaballero.png",
-"Reina Danzante":"./ReinaDanzante.png",
-"Sir Bedivere":"./SirBedivere.png"
+const API = "https://boteb14-raid.onrender.com";
+
+const bossSprites = {
+  "Constructor":"./Constructor.png",
+  "Sacerdotiza Avaloniana":"./SacerdotizaAvaloniana.png",
+  "Basilisco":"./Basilisco.png",
+  "Capitán Caballero":"./CapitanCaballero.png",
+  "Reina Danzante":"./ReinaDanzante.png",
+  "Sir Bedivere":"./SirBedivere.png"
 };
 
-let lastHP=null;
-let finalRunning=false;
+let lastHP = null;
+let finalRunning = false;
+let topLoaded = false;
 
+// ===============================
+// 💥 DAÑO VISUAL
 function spawnDamage(d){
-const el=document.createElement("div");
-el.className="damage";
-el.innerText=Math.floor(d);
-el.style.left=`${50+Math.random()*20-10}%`;
-el.style.top=`${50+Math.random()*20-10}%`;
-bossArea.appendChild(el);
-setTimeout(()=>el.remove(),1000);
+  const el = document.createElement("div");
+  el.className = "damage";
+  el.innerText = Math.floor(d);
+
+  el.style.left = `${50 + Math.random()*20 - 10}%`;
+  el.style.top  = `${50 + Math.random()*20 - 10}%`;
+
+  // CRÍTICO (visual)
+  if(d > 20){
+    el.style.color = "#FFD700";
+    el.style.fontSize = "28px";
+  }
+
+  bossArea.appendChild(el);
+  setTimeout(()=>el.remove(),1000);
 }
 
+// ===============================
+// 💢 SHAKE
 function shakeBoss(){
-bossImg.classList.remove("shake");
-void bossImg.offsetWidth;
-bossImg.classList.add("shake");
+  bossImg.classList.remove("shake");
+  void bossImg.offsetWidth;
+  bossImg.classList.add("shake");
 }
 
+// ===============================
+// 🏆 TOP 3
+async function loadTop3(){
+
+  if(topLoaded) return;
+  topLoaded = true;
+
+  try {
+    const res = await fetch(`${API}/top?channel=${channel}`);
+    const top = await res.json();
+
+    if(!top || !top.length){
+      top3.innerText = "Sin participantes";
+      return;
+    }
+
+    // Render bonito
+    top3.innerHTML = top.map((p,i)=>
+      `${["🥇","🥈","🥉"][i]} ${p.user} ✴️ ${Math.floor(p.maxHit)}`
+    ).join("<br>");
+
+  } catch(err){
+    console.error(err);
+    top3.innerText = "Error cargando ranking";
+  }
+}
+
+// ===============================
+// 🔁 LOOP PRINCIPAL
 setInterval(async()=>{
-const res=await fetch(`https://boteb14-raid.onrender.com/state?channel=${channel}&t=${Date.now()}`);
-const data=await res.json();
 
-if(!data.active&&!data.finished){
-intro.style.display="block";
-boss.style.display="none";
-end.style.display="none";
-return;
-}
+  const res = await fetch(`${API}/state?channel=${channel}&t=${Date.now()}`);
+  const data = await res.json();
 
-if(data.active&&data.bossSpawned){
+  // ===============================
+  // ESTADO INICIAL
+  if(!data.active && !data.finished){
+    intro.style.display = "block";
+    boss.style.display = "none";
+    end.style.display = "none";
 
-intro.style.display="none";
-boss.style.display="block";
+    // reset flags
+    topLoaded = false;
+    finalRunning = false;
+    lastHP = null;
 
-if(lastHP&&data.hp<lastHP){
-spawnDamage(lastHP-data.hp);
-shakeBoss();
-}
+    return;
+  }
 
-lastHP=data.hp;
+  // ===============================
+  // COMBATE
+  if(data.active && data.bossSpawned){
 
-bossName.innerText=data.boss;
-hp.style.width=(data.hp/data.maxHP)*100+"%";
-hpText.innerText=`${data.hp}/${data.maxHP}`;
-bossImg.src=bossSprites[data.boss];
-timer2.innerText=`⏱️ ${data.timeLeft}`;
-}
+    intro.style.display = "none";
+    boss.style.display = "block";
 
-if(data.finished){
-intro.style.display="none";
-boss.style.display="none";
-end.style.display="flex";
+    if(lastHP && data.hp < lastHP){
+      spawnDamage(lastHP - data.hp);
+      shakeBoss();
+    }
 
-endBoss.src=bossSprites[data.boss];
+    lastHP = data.hp;
 
-if(data.result==="win"){
-result.innerText="🏆 VICTORIA 🏆";
-resultSub.innerText=`Hemos vencido a ${data.boss}`;
-result.className="win";
-}else{
-result.innerText="☠️ DERROTA ☠️";
-resultSub.innerText=`${data.boss} ha logrado escapar`;
-result.className="lose";
-}
+    bossName.innerText = data.boss;
+    hp.style.width = (data.hp / data.maxHP) * 100 + "%";
+    hpText.innerText = `${data.hp}/${data.maxHP}`;
+    bossImg.src = bossSprites[data.boss];
 
-if(!finalRunning){
-finalRunning=true;
-let t=3;
-const i=setInterval(()=>{
-finalTimer.innerText=`⏱️ ${t}`;
-t--;
-if(t<0){
-clearInterval(i);
-location.href=`./blank.html?channel=${channel}`;
-}
-},1000);
-}
-}
+    timer2.innerText = `⏱️ ${data.timeLeft}`;
+  }
 
-},500);
+  // ===============================
+  // FINAL
+  if(data.finished){
+
+    intro.style.display = "none";
+    boss.style.display = "none";
+    end.style.display = "flex";
+
+    endBoss.src = bossSprites[data.boss];
+
+    if(data.result === "win"){
+      result.innerText = "🏆 VICTORIA 🏆";
+      resultSub.innerText = `Hemos vencido a ${data.boss}`;
+      result.className = "win";
+    } else {
+      result.innerText = "☠️ DERROTA ☠️";
+      resultSub.innerText = `${data.boss} ha logrado escapar`;
+      result.className = "lose";
+    }
+
+    // 🔥 CARGAR TOP 3
+    loadTop3();
+
+    // ===============================
+    // ⏱️ TIMER FINAL
+    if(!finalRunning){
+      finalRunning = true;
+
+      let t = 3;
+
+      const i = setInterval(()=>{
+        finalTimer.innerText = `⏱️ ${t}`;
+        t--;
+
+        if(t < 0){
+          clearInterval(i);
+          location.href = `./blank.html?channel=${channel}`;
+        }
+
+      },1000);
+    }
+  }
+
+}, 500);
 </script>
 
 </body>
