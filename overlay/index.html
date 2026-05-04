@@ -57,7 +57,7 @@ body {
 }
 
 @keyframes introFade {
-  from { opacity:0; transform: translateY(-15px); }
+  from { opacity:0; transform: translateY(-50px); }
   to   { opacity:1; transform: translateY(0); }
 }
 
@@ -71,7 +71,24 @@ body {
   margin:0 auto;
   position:relative;
 }
+/* 🔥 ZOOM IN REUTILIZABLE */
+.zoomIn {
+  animation: zoomInAnim 0.8s ease-out forwards;
+}
 
+@keyframes zoomInAnim {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+    filter: blur(10px);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+  
 /* PORTAL */
 #portalWrapper {
   width:100%;
@@ -284,12 +301,12 @@ body {
 
 <!-- INTRO -->
 <div id="intro">
-  <div class="text textCian">📢 Coso 📢</div>
+  <div class="text textCian">📢 Coso v1 est 📢</div>
   <div class="text">💥 Recuerda participar usando !attack 💥</div>
 
   <div class="slot">
     <div id="portalWrapper">
-      <img id="portalImg" src="./portal.png">
+      <img class="zoomIn" id="portalImg" src="./portal.png">
     </div>
   </div>
 
