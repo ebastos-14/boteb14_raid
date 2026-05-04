@@ -49,7 +49,7 @@ const client = new tmi.Client({
 client.connect();
 
 // ===============================
-// 👥 OBTENER VIEWERS (ONLINE/OFFLINE)
+// 👥 VIEWERS EXACTOS (ONLINE/OFFLINE)
 async function getViewerCount(channel) {
   try {
     const res = await fetch(
@@ -64,19 +64,16 @@ async function getViewerCount(channel) {
 
     const data = await res.json();
 
-    // 🔴 OFFLINE
+    // OFFLINE
     if (!data.data || data.data.length === 0) {
-      console.log(`⚫ ${channel} OFFLINE`);
       return 10;
     }
 
-    const viewers = data.data[0].viewer_count;
-    console.log(`🟢 ${channel} ONLINE (${viewers} viewers)`);
-
-    return viewers;
+    // ONLINE → valor exacto
+    return data.data[0].viewer_count;
 
   } catch (err) {
-    console.error("Error obteniendo viewers:", err);
+    console.error("Error viewers:", err);
     return 10;
   }
 }
@@ -138,17 +135,14 @@ async function startEvent(channelRaw) {
   match.damageLog = {};
   match.endTime = 0;
 
-  // 🔥 VIEWERS DINÁMICOS
-  let players = await getViewerCount(channel);
+  // 👥 PLAYERS DINÁMICOS (EXACTOS)
+  const players = await getViewerCount(channel);
 
-  // 🔒 Limitar dificultad
-  players = Math.max(5, Math.min(players, 50));
-
-  console.log(`👥 Players usados: ${players}`);
+  console.log("PLAYERS =", players);
 
   match.bossName = bosses[Math.floor(Math.random() * bosses.length)];
   match.bossMaxHP = players;
-  match.bossHP = match.bossMaxHP;
+  match.bossHP = players;
   match.startTime = Date.now();
 
   client.say(normalizeChannel(channel), "T1");
@@ -343,5 +337,5 @@ app.get('/state', (req, res) => {
 
 // ===============================
 app.listen(process.env.PORT || 3000, () => {
-  console.log("🔥 BOT CON VIEWERS DINÁMICOS LISTO 🔥");
+  console.log("🔥 BOT CON VIEWERS EXACTOS LISTO 🔥");
 });
