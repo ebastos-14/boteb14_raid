@@ -1,317 +1,433 @@
-const tmi = require('tmi.js');
-const express = require('express');
-const cors = require('cors');
-const fetch = require('node-fetch');
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
 
-const app = express();
-app.use(cors());
+<style>
+body {
+  margin:0;
+  font-family: Arial;
+  color:white;
+  overflow:hidden;
+  background: transparent;
+}
 
-// ===============================
-const CHANNEL_TOKENS = {
-  "ebastos14_": process.env.EB14_TOKEN,
-  "jaciitv": process.env.JACIITV_TOKEN,
-  "hholasoynuevo": process.env.HHOLA_TOKEN,
-  "boteb14": process.env.BOTEB14_TOKEN,
-  "mrryden": process.env.MRRYDEN_TOKEN,
-  "tempcount1": process.env.TEMP1_TOKEN,
-  "tempcount2": process.env.TEMP2_TOKEN,
-  "tempcount3": process.env.TEMP3_TOKEN
+/* CONTENEDOR */
+#screen {
+  width:100vw;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+
+/* TEXTOS */
+.text {
+  font-size:20px;
+  margin:4px 0;
+  text-shadow:
+    0 0 2px rgba(0,0,0,0.6),
+    0 0 4px rgba(0,0,0,0.4),
+    0 0 6px rgba(150,150,150,0.3);
+}
+
+/* TEXTO CIAN */
+.textCian {
+  color:#51D1F6;
+  text-shadow:
+    0 0 5px #00FFFF,
+    0 0 10px #00FFFF,
+    0 0 20px #00FFFF;
+}
+
+  /* TEXTO DORADO */
+.textGold {
+  color:#FFA500;
+  text-shadow:
+    0 0 5px #FFD700,
+    0 0 10px #FFD700,
+    0 0 20px #FFD700;
+}
+
+/* ANIMACION DE CAIDA */
+.introAnim { 
+  animation: introFade 0.6s ease-out;
+}
+
+@keyframes introFade {
+  from { opacity:0; transform: translateY(-15px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+/* SLOT */
+.slot {
+  width:300px;
+  height:300px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:0 auto;
+  position:relative;
+}
+
+/* PORTAL */
+#portalWrapper {
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  animation: spin 3s linear infinite;
+}
+
+#portalImg {
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  animation: pulse 2s ease-in-out infinite,
+             glowPortal 2s ease-in-out infinite;
+}
+
+#bossImg {
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  animation: glowBoss 2s ease-in-out infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+@keyframes glowPortal {
+  0% { filter: drop-shadow(0 0 5px #a8e1f1); }
+  50% { filter: drop-shadow(0 0 20px #a8e1f1); }
+  100% { filter: drop-shadow(0 0 5px #a8e1f1); }
+}
+
+  @keyframes glowBoss {
+  0% { filter: drop-shadow(0 0 5px #ffebba); }
+  50% { filter: drop-shadow(0 0 20px #ffebba); }
+  100% { filter: drop-shadow(0 0 5px #ffebba); }
+}
+
+/* =========================
+   BARRA DE VIDA
+========================= */
+
+#bar {
+  width:260px;
+  height:12px;
+  margin:10px auto;
+  position:relative;
+  background:#2a0000;
+  border:2px solid #999;
+  overflow:hidden;
+}
+
+#hp {
+  position:absolute;
+  top:0;
+  left:0;
+  height:100%;
+  width:100%;
+  background:#ff0000;
+  transition:width 0.3s linear;
+  z-index:1;
+}
+
+#segments {
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  display:flex;
+  z-index:2;
+}
+
+.segment {
+  flex:1;
+  position:relative;
+}
+
+.segment:not(:last-child)::after {
+  content:"";
+  position:absolute;
+  top:0;
+  right:0;
+  width:2px;
+  height:100%;
+  background:#000;
+}
+
+/* ========================= */
+
+#hpText {
+  margin-top:5px;
+}
+
+/* BOSS */
+#bossName {
+  font-size:24px;
+  margin:8px 0;
+}
+
+#bossArea {
+  width:300px;
+  height:300px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+}
+
+#bossImg {
+  max-width:100%;
+  max-height:100%;
+  object-fit:contain;
+}
+
+/* TIMERS */
+#timer1, #timer2, #finalTimer {
+  font-size:18px;
+}
+
+/* DAÑO */
+.damage {
+  position:absolute;
+  color:#ff4444;
+  font-weight:bold;
+  font-size:22px;
+  pointer-events:none;
+  animation: floatUp 1s ease-out forwards;
+  text-shadow:0 0 6px black;
+}
+
+@keyframes floatUp {
+  0% { opacity:1; transform: translate(-50%,0); }
+  100% { opacity:0; transform: translate(-50%,-60px); }
+}
+
+/* SHAKE */
+.shake {
+  animation: shakeAnim 0.25s linear;
+}
+
+@keyframes shakeAnim {
+  0% { transform:translate(0,0); }
+  50% { transform:translate(4px,-2px); }
+  100% { transform:translate(0,0); }
+}
+
+/* FINAL */
+#end {
+  position:absolute;
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: rgba(0,0,0,0.7);
+}
+
+#endContainer {
+  position:relative;
+  text-align:center;
+}
+
+#endBoss {
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%, -50%);
+  width:400px;
+  opacity:0.15;
+  filter: blur(2px) brightness(0.7);
+  pointer-events:none;
+}
+
+#result {
+  font-size:40px;
+}
+
+.win {
+  color:#00ff99;
+  text-shadow:
+    0 0 6px rgba(0,255,150,0.8),
+    0 0 12px rgba(0,255,150,0.5),
+    0 0 18px rgba(0,255,150,0.3);
+}
+
+.lose {
+  color:#ff4444;
+  text-shadow:
+    0 0 6px rgba(255,80,80,0.8),
+    0 0 12px rgba(255,80,80,0.5),
+    0 0 18px rgba(255,80,80,0.3);
+}
+  
+</style>
+</head>
+
+<body>
+
+<div id="screen">
+
+<!-- INTRO -->
+<div id="intro">
+  <div class="text textCian">📢 Esta por iniciar un evento 📢</div>
+  <div class="text">💥 Recuerda participar usando !attack 💥</div>
+
+  <div class="slot">
+    <div id="portalWrapper">
+      <img id="portalImg" src="./portal.png">
+    </div>
+  </div>
+
+  <div class="text" id="timer1"></div>
+</div>
+
+<!-- BOSS -->
+<div class="text introAnim" id="boss" style="display:none">
+  <div class="textGold" id="bossName"></div>
+
+  <div id="bar">
+    <div id="hp"></div>
+    <div id="segments">
+      <div class="segment"></div>
+      <div class="segment"></div>
+      <div class="segment"></div>
+      <div class="segment"></div>
+      <div class="segment"></div>
+    </div>
+  </div>
+
+  <div id="hpText"></div>
+
+  <div id="bossArea">
+    <img id="bossImg">
+  </div>
+
+  <div id="timer2"></div>
+</div>
+
+<!-- FINAL -->
+<div id="end" style="display:none">
+  <div id="endContainer">
+    <img id="endBoss">
+    <div class="text" id="result"></div>
+    <div class="text" id="resultSub"></div>
+    <div class="text" id="finalTimer"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const params=new URLSearchParams(location.search);
+let channel=(params.get("channel")||"").toLowerCase();
+
+const bossSprites={
+"Constructor":"./Constructor.png",
+"Sacerdotiza Avaloniana":"./SacerdotizaAvaloniana.png",
+"Basilisco":"./Basilisco.png",
+"Capitán Caballero":"./CapitanCaballero.png",
+"Reina Danzante":"./ReinaDanzante.png",
+"Sir Bedivere":"./SirBedivere.png"
 };
 
-const START_COOLDOWN = 10000;
-let lastStart = {};
-const CHANNELS = Object.keys(CHANNEL_TOKENS);
+let lastHP=null;
+let finalRunning=false;
 
-// ===============================
-function normalizeChannel(channel) {
-  return channel.startsWith('#') ? channel : `#${channel}`;
+function spawnDamage(d){
+const el=document.createElement("div");
+el.className="damage";
+el.innerText=Math.floor(d);
+el.style.left=`${50+Math.random()*20-10}%`;
+el.style.top=`${50+Math.random()*20-10}%`;
+bossArea.appendChild(el);
+setTimeout(()=>el.remove(),1000);
 }
 
-function cleanChannel(channel) {
-  return channel.replace('#', '').toLowerCase();
+function shakeBoss(){
+bossImg.classList.remove("shake");
+void bossImg.offsetWidth;
+bossImg.classList.add("shake");
 }
 
-// ===============================
-// 🔐 AUTH
-function isAuthorized(tags) {
-  return tags.mod || (tags.badges && tags.badges.broadcaster === '1');
+setInterval(async()=>{
+const res=await fetch(`https://boteb14-raid.onrender.com/state?channel=${channel}&t=${Date.now()}`);
+const data=await res.json();
+
+if(!data.active&&!data.finished){
+intro.style.display="block";
+boss.style.display="none";
+end.style.display="none";
+return;
 }
 
-// ===============================
-const client = new tmi.Client({
-  options: { debug: true, reconnect: true },
-  identity: {
-    username: process.env.TWITCH_USER,
-    password: process.env.TWITCH_OAUTH
-  },
-  channels: CHANNELS.map(normalizeChannel)
-});
+if(data.active&&data.bossSpawned){
 
-client.connect();
+intro.style.display="none";
+boss.style.display="block";
 
-// ===============================
-async function getViewerCount(channel) {
-  try {
-    const res = await fetch(
-      `https://api.twitch.tv/helix/streams?user_login=${channel}`,
-      {
-        headers: {
-          "Client-ID": process.env.TWITCH_CLIENT_ID,
-          "Authorization": `Bearer ${process.env.TWITCH_APP_TOKEN}`
-        }
-      }
-    );
-
-    const data = await res.json();
-    if (!data.data || data.data.length === 0) return 100;
-    return data.data[0].viewer_count;
-
-  } catch {
-    return 10;
-  }
+if(lastHP&&data.hp<lastHP){
+spawnDamage(lastHP-data.hp);
+shakeBoss();
 }
 
-// ===============================
-let matches = {};
+lastHP=data.hp;
 
-const DEFAULT_DURATION = 45000;
-const DEFAULT_MAX_ATTACKS = 100;
-const BOSS_DELAY = 5000;
-
-const bosses = [
-  "Constructor",
-  "Sacerdotiza Avaloniana",
-  "Basilisco",
-  "Capitán Caballero",
-  "Reina Danzante",
-  "Sir Bedivere"
-];
-
-// ===============================
-function getMatch(channel) {
-
-  const key = cleanChannel(channel);
-
-  if (!matches[key]) {
-    matches[key] = {
-      active: false,
-      finished: false,
-      bossSpawned: false,
-
-      bossName: "",
-      bossHP: 0,
-      bossMaxHP: 0,
-
-      startTime: 0,
-      endTime: 0,
-
-      interval: null,
-      damageLog: {},
-
-      duration: DEFAULT_DURATION,
-      maxAttacks: DEFAULT_MAX_ATTACKS
-    };
-  }
-
-  return matches[key];
+bossName.innerText=data.boss;
+hp.style.width=(data.hp/data.maxHP)*100+"%";
+hpText.innerText=`${data.hp}/${data.maxHP}`;
+bossImg.src=bossSprites[data.boss];
+timer2.innerText=`⏱️ ${data.timeLeft}`;
 }
 
-// ===============================
-function parseCustomEvent(message) {
-  const parts = message.split(" ");
+if(data.finished){
+intro.style.display="none";
+boss.style.display="none";
+end.style.display="flex";
 
-  let duration = null;
-  let maxAttacks = null;
+endBoss.src=bossSprites[data.boss];
 
-  parts.forEach(p => {
-
-    if (p.endsWith("m")) {
-      const val = parseInt(p);
-      if (!isNaN(val)) duration = val * 60000;
-    }
-
-    if (p.endsWith("s")) {
-      const val = parseInt(p);
-      if (!isNaN(val)) duration = val * 1000;
-    }
-
-    if (p.endsWith("a")) {
-      const val = parseInt(p);
-      if (!isNaN(val)) maxAttacks = val;
-    }
-
-  });
-
-  if (duration && duration > 10 * 60000) duration = 10 * 60000;
-  if (maxAttacks && maxAttacks > 500) maxAttacks = 500;
-
-  return { duration, maxAttacks };
+if(data.result==="win"){
+result.innerText="🏆 VICTORIA 🏆";
+resultSub.innerText=`Hemos vencido a ${data.boss}`;
+result.className="win";
+}else{
+result.innerText="☠️ DERROTA ☠️";
+resultSub.innerText=`${data.boss} ha logrado escapar`;
+result.className="lose";
 }
 
-// ===============================
-async function startEvent(channelRaw) {
-
-  const channel = cleanChannel(channelRaw);
-  const match = getMatch(channel);
-
-  if (match.active) return false;
-
-  match.active = true;
-  match.finished = false;
-  match.bossSpawned = false;
-  match.damageLog = {};
-  match.endTime = 0;
-
-  const players = await getViewerCount(channel);
-
-  match.bossName = bosses[Math.random() * bosses.length | 0];
-  match.bossMaxHP = 3 * players;
-  match.bossHP = 3 * players;
-  match.startTime = Date.now();
-
-  client.say(normalizeChannel(channel), "📢 Evento iniciando...");
-  client.say(normalizeChannel(channel), "💥 Usa !attack 💥");
-
-  setTimeout(() => {
-
-    match.bossSpawned = true;
-
-    client.say(
-      normalizeChannel(channel),
-      `👹 ${match.bossName} ❤️ ${match.bossMaxHP}`
-    );
-
-    runClock(channel);
-
-  }, BOSS_DELAY);
-
-  return true;
+if(!finalRunning){
+finalRunning=true;
+let t=3;
+const i=setInterval(()=>{
+finalTimer.innerText=`⏱️ ${t}`;
+t--;
+if(t<0){
+clearInterval(i);
+location.href=`./blank.html?channel=${channel}`;
+}
+},1000);
+}
 }
 
-// ===============================
-function runClock(channelRaw) {
+},500);
+</script>
 
-  const channel = cleanChannel(channelRaw);
-  const match = getMatch(channel);
-
-  if (match.interval) clearInterval(match.interval);
-
-  match.interval = setInterval(() => {
-
-    if (!match.active || !match.bossSpawned) return;
-
-    const elapsed = Date.now() - match.startTime;
-    const remaining = Math.max(0, match.duration - elapsed);
-    const sec = Math.ceil(remaining / 1000);
-
-    if ([30,20,10].includes(sec)) {
-      client.say(normalizeChannel(channel),
-        `⏱️ ${sec}s - ❤️ ${Math.floor(match.bossHP)}`
-      );
-    }
-
-    if (sec <= 0) {
-      clearInterval(match.interval);
-      match.interval = null;
-      finishMatch(channel, false);
-    }
-
-  }, 1000);
-}
-
-// ===============================
-client.on('message', (channel, tags, message, self) => {
-  if (self) return;
-
-  const key = cleanChannel(channel);
-  const match = getMatch(key);
-
-  const msg = message.toLowerCase().trim();
-
-  // 🔒 CUSTOM EVENT SOLO MOD/STREAMER
-  if (msg.startsWith('!customevent')) {
-
-    if (!isAuthorized(tags)) return;
-
-    const { duration, maxAttacks } = parseCustomEvent(msg);
-
-    if (duration) match.duration = duration;
-    if (maxAttacks) match.maxAttacks = maxAttacks;
-
-    client.say(channel,
-      `⚙️ Custom: ⏱️ ${duration ? duration/1000+"s" : "default"} | ⚔️ ${maxAttacks || "default"}`
-    );
-
-    return;
-  }
-
-  // ===============================
-  if (!match.active || match.finished || !match.bossSpawned) return;
-
-  if (!['!attack','!a'].includes(msg)) return;
-
-  const user = tags.username;
-
-  if (!match.damageLog[user]) match.damageLog[user] = [];
-
-  if (match.damageLog[user].length >= match.maxAttacks) return;
-
-  const dmg = (10 + 4) * (0.5 + Math.random());
-
-  match.damageLog[user].push(dmg);
-  match.bossHP -= dmg;
-
-  if (match.bossHP <= 0) {
-    match.bossHP = 0;
-    finishMatch(key, true);
-  }
-});
-
-// ===============================
-function buildTop3(match) {
-
-  return Object.entries(match.damageLog)
-    .map(([user,hits]) => ({
-      user,
-      maxHit: Math.max(...hits)
-    }))
-    .sort((a,b)=>b.maxHit-a.maxHit)
-    .slice(0,3);
-}
-
-// ===============================
-function finishMatch(channelRaw, win) {
-
-  const channel = cleanChannel(channelRaw);
-  const match = getMatch(channel);
-
-  if (!match.active || match.finished) return;
-
-  match.active = false;
-  match.finished = true;
-  match.endTime = Date.now();
-
-  if (match.interval) clearInterval(match.interval);
-
-  const target = normalizeChannel(channel);
-
-  client.say(target,
-    win ? `🏆 Victoria` : `☠️ Derrota`
-  );
-
-  const top3 = buildTop3(match);
-
-  client.say(target,
-    top3.map((p,i)=>
-      `${["🥇","🥈","🥉"][i]} ${p.user} ${Math.floor(p.maxHit)}`
-    ).join(" - ")
-  );
-
-  match.duration = DEFAULT_DURATION;
-  match.maxAttacks = DEFAULT_MAX_ATTACKS;
-}
-
-// ===============================
-app.listen(process.env.PORT || 3000, () => {
-  console.log("🔥 BOT SEGURO LISTO 🔥");
-});
+</body>
+</html>
