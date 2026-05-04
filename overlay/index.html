@@ -9,7 +9,30 @@ body {
   font-family: Arial;
   color:white;
   overflow:hidden;
-  background: transparent;
+
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 400px;
+
+  transition: background-image 0.5s ease-in-out;
+}
+
+/* 🔥 CAPA VISUAL DEL BOSS */
+body::before {
+  content:"";
+  position:fixed;
+  inset:0;
+
+  background: inherit;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 400px;
+
+  opacity:0.15;
+  filter: blur(2px) brightness(0.7);
+
+  z-index:-1;
 }
 
 /* CONTENEDOR */
@@ -228,37 +251,6 @@ body {
   background: transparent;
 }
 
-/* 🔥 BACKGROUND BOSS */
-#endContainer {
-  position:relative;
-  text-align:center;
-
-  background-repeat:no-repeat;
-  background-position:center;
-  background-size:400px;
-}
-
-#endContainer::before {
-  content:"";
-  position:absolute;
-  inset:0;
-
-  background:inherit;
-  background-repeat:no-repeat;
-  background-position:center;
-  background-size:400px;
-
-  opacity:0.15;
-  filter: blur(2px) brightness(0.7);
-
-  z-index:0;
-}
-
-#endContainer > * {
-  position:relative;
-  z-index:2;
-}
-
 /* RESULTADOS */
 #result { font-size:40px; }
 
@@ -282,7 +274,7 @@ body {
 
 <!-- INTRO -->
 <div id="intro">
-  <div class="text textCian">📢 Estable v3 FINAL FIX 📢</div>
+  <div class="text textCian">📢 Estable v3 FINAL GLOBAL BG 📢</div>
   <div class="text">💥 Recuerda participar usando !attack 💥</div>
 
   <div class="slot">
@@ -322,7 +314,7 @@ body {
 
 <!-- FINAL -->
 <div id="end" style="display:none">
-  <div id="endContainer">
+  <div>
     <div class="text textf" id="result"></div>
     <div class="text textf" id="resultSub"></div>
     <div class="text textf" id="finalTimer"></div>
@@ -365,6 +357,7 @@ setInterval(async()=>{
     intro.style.display="block";
     boss.style.display="none";
     end.style.display="none";
+    document.body.style.backgroundImage = "";
     return;
   }
 
@@ -390,8 +383,8 @@ setInterval(async()=>{
     boss.style.display="none";
     end.style.display="flex";
 
-    // 🔥 BACKGROUND BOSS
-    endContainer.style.backgroundImage = `url(${bossSprites[data.boss]})`;
+    // 🔥 FONDO GLOBAL
+    document.body.style.backgroundImage = `url(${bossSprites[data.boss]})`;
 
     if(data.result==="win"){
       result.innerText="🏆 VICTORIA 🏆";
