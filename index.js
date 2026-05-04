@@ -205,7 +205,7 @@ client.on('message', (channel, tags, message, self) => {
   if (!match.active || match.finished || !match.bossSpawned) return;
 
   const msg = message.toLowerCase().trim();
-  if (msg !== '!attack' && msg !== '!a') return;
+  if (msg !== '!attack' && msg !== '!a' && msg !== '!sorteo' && msg !== '!sorteotv') return;
 
   const user = tags.username;
 
