@@ -9,14 +9,14 @@ app.use(cors());
 // ===============================
 // 🔐 TOKENS POR CANAL (MANUAL)
 const CHANNEL_TOKENS = {
-  "ebastos14_": "550e8400-e29b-41d4-a716-446655440000",
-  "jaciitv": "9b2f6a1d-3e4c-4a8b-9d72-5f1c8e7a6b20",
-  "hholasoynuevo": "4d7a9c3e-1f52-47b8-a6d1-8e2f5c9b0a73",
-  "boteb14": "8c1e2f7a-6b4d-4a9c-8f21-3d5e7b0a9c62",
-  "mrryden": "2f9b6c1d-3a7e-4d8f-b521-6c0a9e3b7d45",
-  "tempcount1": "5a3d8e1c-9b6f-4c27-ae10-7f2b4d9c6a81",
-  "tempcount3": "1d7c5a9e-8b3f-4e2a-9c61-0f8b2d7a4e53",
-  "tempcount2": "7e2a4c9d-5b1f-4a83-b6d0-9c3e7f1a2b68"
+  "ebastos14_": process.env.EB14_TOKEN,
+  "jaciitv": process.env.JACIITV_TOKEN,
+  "hholasoynuevo": process.env.HHOLA_TOKEN,
+  "boteb14": process.env.BOTEB14_TOKEN,
+  "mrryden": process.env.MRRYDEN_TOKEN,
+  "tempcount1": process.env.TEMP1_TOKEN,
+  "tempcount2": process.env.TEMP2_TOKEN,
+  "tempcount3": process.env.TEMP3_TOKEN
 };
 
 // ===============================
