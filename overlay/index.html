@@ -33,32 +33,14 @@ body {
     0 0 6px rgba(150,150,150,0.3);
 }
 
-/* TEXTO CIAN */
 .textCian {
   color:#51D1F6;
-  text-shadow:
-    0 0 5px #00FFFF,
-    0 0 10px #00FFFF,
-    0 0 20px #00FFFF;
+  text-shadow:0 0 10px #00FFFF;
 }
 
-  /* TEXTO DORADO */
 .textGold {
   color:#FFA500;
-  text-shadow:
-    0 0 5px #FFD700,
-    0 0 10px #FFD700,
-    0 0 20px #FFD700;
-}
-
-/* ANIMACION DE CAIDA */
-.introAnim { 
-  animation: introFade 0.6s ease-out;
-}
-
-@keyframes introFade {
-  from { opacity:0; transform: translateY(-15px); }
-  to   { opacity:1; transform: translateY(0); }
+  text-shadow:0 0 10px #FFD700;
 }
 
 /* SLOT */
@@ -68,8 +50,6 @@ body {
   display:flex;
   align-items:center;
   justify-content:center;
-  margin:0 auto;
-  position:relative;
 }
 
 /* PORTAL */
@@ -84,46 +64,34 @@ body {
 
 #portalImg {
   width:100%;
-  height:100%;
-  object-fit:contain;
-  animation: pulse 2s ease-in-out infinite,
-             glowPortal 2s ease-in-out infinite;
-}
-
-#bossImg {
-  width:100%;
-  height:100%;
-  object-fit:contain;
-  animation: glowBoss 6s ease-in-out infinite;
+  animation: pulse 2s infinite;
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
   50% { transform: scale(1.08); }
-  100% { transform: scale(1); }
 }
 
-@keyframes glowPortal {
-  0% { filter: drop-shadow(0 0 5px #a8e1f1); }
-  50% { filter: drop-shadow(0 0 20px #a8e1f1); }
-  100% { filter: drop-shadow(0 0 5px #a8e1f1); }
+/* BOSS */
+#bossArea {
+  width:300px;
+  height:300px;
+  position:relative;
 }
 
-  @keyframes glowBoss {
-  0% { filter: drop-shadow(0 0 5px #ffebba); }
+#bossImg {
+  width:100%;
+  animation: glowBoss 6s infinite;
+}
+
+@keyframes glowBoss {
   50% { filter: drop-shadow(0 0 20px #ffebba); }
-  100% { filter: drop-shadow(0 0 5px #ffebba); }
 }
 
-/* =========================
-   BARRA DE VIDA
-========================= */
-
+/* BARRA VIDA PRO */
 #bar {
   width:260px;
   height:12px;
@@ -141,14 +109,14 @@ body {
   height:100%;
   width:100%;
   background:#ff0000;
-  transition:width 0.3s linear;
+  transform-origin:left;
+  transform:scaleX(1);
+  transition:transform 0.3s linear;
   z-index:1;
 }
 
 #segments {
   position:absolute;
-  top:0;
-  left:0;
   width:100%;
   height:100%;
   display:flex;
@@ -157,49 +125,7 @@ body {
 
 .segment {
   flex:1;
-  position:relative;
-}
-
-.segment:not(:last-child)::after {
-  content:"";
-  position:absolute;
-  top:0;
-  right:0;
-  width:2px;
-  height:100%;
-  background:#000;
-}
-
-/* ========================= */
-
-#hpText {
-  margin-top:5px;
-}
-
-/* BOSS */
-#bossName {
-  font-size:24px;
-  margin:8px 0;
-}
-
-#bossArea {
-  width:300px;
-  height:300px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  position:relative;
-}
-
-#bossImg {
-  max-width:100%;
-  max-height:100%;
-  object-fit:contain;
-}
-
-/* TIMERS */
-#timer1, #timer2, #finalTimer {
-  font-size:18px;
+  border-right:2px solid black;
 }
 
 /* DAÑO */
@@ -207,26 +133,20 @@ body {
   position:absolute;
   color:#ff4444;
   font-weight:bold;
-  font-size:22px;
-  pointer-events:none;
-  animation: floatUp 1s ease-out forwards;
-  text-shadow:0 0 6px black;
+  animation: floatUp 1s forwards;
 }
 
 @keyframes floatUp {
-  0% { opacity:1; transform: translate(-50%,0); }
-  100% { opacity:0; transform: translate(-50%,-60px); }
+  to { opacity:0; transform: translateY(-60px); }
 }
 
 /* SHAKE */
 .shake {
-  animation: shakeAnim 0.25s linear;
+  animation: shakeAnim 0.25s;
 }
 
 @keyframes shakeAnim {
-  0% { transform:translate(0,0); }
-  50% { transform:translate(4px,-2px); }
-  100% { transform:translate(0,0); }
+  50% { transform: translate(4px,-2px); }
 }
 
 /* FINAL */
@@ -239,42 +159,9 @@ body {
   justify-content:center;
 }
 
-#endContainer {
-  position:relative;
-  text-align:center;
-}
+.win { color:#00ff99; }
+.lose { color:#ff4444; }
 
-#endBoss {
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%, -50%);
-  width:400px;
-  opacity:0.15;
-  filter: blur(2px) brightness(0.7);
-  pointer-events:none;
-}
-
-#result {
-  font-size:40px;
-}
-
-.win {
-  color:#00ff99;
-  text-shadow:
-    0 0 6px rgba(0,255,150,0.8),
-    0 0 12px rgba(0,255,150,0.5),
-    0 0 18px rgba(0,255,150,0.3);
-}
-
-.lose {
-  color:#ff4444;
-  text-shadow:
-    0 0 6px rgba(255,80,80,0.8),
-    0 0 12px rgba(255,80,80,0.5),
-    0 0 18px rgba(255,80,80,0.3);
-}
-  
 </style>
 </head>
 
@@ -282,23 +169,17 @@ body {
 
 <div id="screen">
 
-<!-- INTRO -->
 <div id="intro">
-  <div class="text textCian">📢 Esta por iniciar un evento 📢</div>
-  <div class="text">💥 Recuerda participar usando !attack 💥</div>
-
+  <div class="text textCian">📢 Evento iniciando</div>
   <div class="slot">
     <div id="portalWrapper">
       <img id="portalImg" src="./portal.png">
     </div>
   </div>
-
-  <div class="text" id="timer1"></div>
 </div>
 
-<!-- BOSS -->
-<div class="text introAnim" id="boss" style="display:none">
-  <div class="textGold" id="bossName"></div>
+<div id="boss" style="display:none">
+  <div id="bossName"></div>
 
   <div id="bar">
     <div id="hp"></div>
@@ -316,116 +197,67 @@ body {
   <div id="bossArea">
     <img id="bossImg">
   </div>
-
-  <div id="timer2"></div>
 </div>
 
-<!-- FINAL -->
 <div id="end" style="display:none">
-  <div id="endContainer">
-    <img id="endBoss">
-    <div class="text" id="result"></div>
-    <div class="text" id="resultSub"></div>
-    <div class="text" id="finalTimer"></div>
+  <div>
+    <div id="result"></div>
   </div>
 </div>
 
 </div>
 
 <script>
-const params=new URLSearchParams(location.search);
-let channel=(params.get("channel")||"").toLowerCase();
+const params = new URLSearchParams(location.search);
+let channel = (params.get("channel") || "").toLowerCase();
 
-const bossSprites={
-"Constructor":"./Constructor.png",
-"Sacerdotiza Avaloniana":"./SacerdotizaAvaloniana.png",
-"Basilisco":"./Basilisco.png",
-"Capitán Caballero":"./CapitanCaballero.png",
-"Reina Danzante":"./ReinaDanzante.png",
-"Sir Bedivere":"./SirBedivere.png"
-};
-
-let lastHP=null;
-let finalRunning=false;
+let lastHP = null;
 
 function spawnDamage(d){
-const el=document.createElement("div");
-el.className="damage";
-el.innerText=Math.floor(d);
-el.style.left=`${50+Math.random()*20-10}%`;
-el.style.top=`${50+Math.random()*20-10}%`;
-bossArea.appendChild(el);
-setTimeout(()=>el.remove(),1000);
+  const el=document.createElement("div");
+  el.className="damage";
+  el.innerText=Math.floor(d);
+  el.style.left="50%";
+  el.style.top="50%";
+  bossArea.appendChild(el);
+  setTimeout(()=>el.remove(),1000);
 }
 
 function shakeBoss(){
-bossImg.classList.remove("shake");
-void bossImg.offsetWidth;
-bossImg.classList.add("shake");
+  bossImg.classList.remove("shake");
+  requestAnimationFrame(()=>bossImg.classList.add("shake"));
 }
 
-setInterval(async()=>{
-const res=await fetch(`https://boteb14-raid.onrender.com/state?channel=${channel}&t=${Date.now()}`);
-const data=await res.json();
+setInterval(async () => {
 
-if(!data.active&&!data.finished){
-intro.style.display="block";
-boss.style.display="none";
-end.style.display="none";
-return;
-}
+  const res = await fetch(`https://boteb14-raid.onrender.com/state?channel=${channel}&t=${Date.now()}`);
+  const data = await res.json();
 
-if(data.active&&data.bossSpawned){
+  if(data.active && data.bossSpawned){
 
-intro.style.display="none";
-boss.style.display="block";
+    intro.style.display="none";
+    boss.style.display="block";
 
-if(lastHP&&data.hp<lastHP){
-spawnDamage(lastHP-data.hp);
-shakeBoss();
-}
+    if(lastHP !== null && data.hp < lastHP){
+      spawnDamage(lastHP - data.hp);
+      shakeBoss();
+    }
 
-lastHP=data.hp;
+    lastHP = data.hp;
 
-bossName.innerText=data.boss;
-hp.style.width=(data.hp/data.maxHP)*100+"%";
-hpText.innerText=`${data.hp}/${data.maxHP}`;
-bossImg.src=bossSprites[data.boss];
-timer2.innerText=`⏱️ ${data.timeLeft}`;
-}
+    bossName.innerText = data.boss;
+    hp.style.transform = `scaleX(${data.hp / data.maxHP})`;
+    hpText.innerText = `${data.hp}/${data.maxHP}`;
+  }
 
-if(data.finished){
-intro.style.display="none";
-boss.style.display="none";
-end.style.display="flex";
+  if(data.finished){
+    boss.style.display="none";
+    end.style.display="flex";
 
-endBoss.src=bossSprites[data.boss];
+    result.innerText = data.result === "win" ? "🏆 VICTORIA" : "☠️ DERROTA";
+  }
 
-if(data.result==="win"){
-result.innerText="🏆 VICTORIA 🏆";
-resultSub.innerText=`Hemos vencido a ${data.boss}`;
-result.className="win";
-}else{
-result.innerText="☠️ DERROTA ☠️";
-resultSub.innerText=`${data.boss} ha logrado escapar`;
-result.className="lose";
-}
-
-if(!finalRunning){
-finalRunning=true;
-let t=3;
-const i=setInterval(()=>{
-finalTimer.innerText=`⏱️ ${t}`;
-t--;
-if(t<0){
-clearInterval(i);
-location.href=`./blank.html?channel=${channel}`;
-}
-},1000);
-}
-}
-
-},500);
+}, 500);
 </script>
 
 </body>
