@@ -78,9 +78,9 @@ body {
 
 @keyframes zoomInAnim {
   0% {
-    transform: scale(0.2);
+    transform: scale(0.3);
     opacity: 0;
-    filter: blur(2px);
+    filter: blur(5px);
   }
   100% {
     transform: scale(1);
@@ -254,6 +254,7 @@ body {
   display:flex;
   align-items:center;
   justify-content:center;
+  background: rgba(0,0,0,0.7);
 }
 
 #endContainer {
@@ -300,7 +301,7 @@ body {
 
 <!-- INTRO -->
 <div id="intro">
-  <div class="text textCian">📢 Estable v3 - shake test 📢</div>
+  <div class="text textCian">📢 Estable v1 - blur 5 📢</div>
   <div class="text">💥 Recuerda participar usando !attack 💥</div>
 
   <div class="slot">
@@ -332,7 +333,7 @@ body {
   <div class="text introAnim" id="hpText"></div>
 
   <div class="introAnim" id="bossArea">
-    <img class="shake" id="bossImg">
+    <img id="bossImg">
   </div>
 
   <div class= "text introAnim" id="timer2"></div>
