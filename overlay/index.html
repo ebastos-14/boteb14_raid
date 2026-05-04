@@ -42,7 +42,7 @@ body {
     0 0 20px #00FFFF;
 }
 
-  /* TEXTO DORADO */
+/* TEXTO DORADO */
 .textGold {
   color:#FFA500;
   text-shadow:
@@ -51,7 +51,7 @@ body {
     0 0 20px #FFD700;
 }
 
-/* ANIMACION DE CAIDA */
+/* ANIMACION */
 .introAnim { 
   animation: introFade 0.6s ease-out;
 }
@@ -114,16 +114,13 @@ body {
   100% { filter: drop-shadow(0 0 5px #a8e1f1); }
 }
 
-  @keyframes glowBoss {
+@keyframes glowBoss {
   0% { filter: drop-shadow(0 0 5px #ffebba); }
   50% { filter: drop-shadow(0 0 20px #ffebba); }
   100% { filter: drop-shadow(0 0 5px #ffebba); }
 }
 
-/* =========================
-   BARRA DE VIDA
-========================= */
-
+/* BARRA */
 #bar {
   width:260px;
   height:12px;
@@ -155,33 +152,18 @@ body {
   z-index:2;
 }
 
-.segment {
-  flex:1;
-  position:relative;
-}
+.segment { flex:1; }
 
 .segment:not(:last-child)::after {
   content:"";
   position:absolute;
-  top:0;
   right:0;
   width:2px;
   height:100%;
   background:#000;
 }
 
-/* ========================= */
-
-#hpText {
-  margin-top:5px;
-}
-
 /* BOSS */
-#bossName {
-  font-size:24px;
-  margin:8px 0;
-}
-
 #bossArea {
   width:300px;
   height:300px;
@@ -189,17 +171,6 @@ body {
   align-items:center;
   justify-content:center;
   position:relative;
-}
-
-#bossImg {
-  max-width:100%;
-  max-height:100%;
-  object-fit:contain;
-}
-
-/* TIMERS */
-#timer1, #timer2, #finalTimer {
-  font-size:18px;
 }
 
 /* DAÑO */
@@ -210,7 +181,6 @@ body {
   font-size:22px;
   pointer-events:none;
   animation: floatUp 1s ease-out forwards;
-  text-shadow:0 0 6px black;
 }
 
 @keyframes floatUp {
@@ -219,14 +189,10 @@ body {
 }
 
 /* SHAKE */
-.shake {
-  animation: shakeAnim 0.25s linear;
-}
+.shake { animation: shakeAnim 0.25s linear; }
 
 @keyframes shakeAnim {
-  0% { transform:translate(0,0); }
   50% { transform:translate(4px,-2px); }
-  100% { transform:translate(0,0); }
 }
 
 /* FINAL */
@@ -240,11 +206,6 @@ body {
   background: rgba(0,0,0,0.7);
 }
 
-#endContainer {
-  position:relative;
-  text-align:center;
-}
-
 #endBoss {
   position:absolute;
   top:50%;
@@ -252,30 +213,17 @@ body {
   transform:translate(-50%, -50%);
   width:400px;
   opacity:0.15;
-  filter: blur(2px) brightness(0.7);
-  pointer-events:none;
 }
 
-#result {
-  font-size:40px;
-}
+.win { color:#00ff99; }
+.lose { color:#ff4444; }
 
-.win {
-  color:#00ff99;
-  text-shadow:
-    0 0 6px rgba(0,255,150,0.8),
-    0 0 12px rgba(0,255,150,0.5),
-    0 0 18px rgba(0,255,150,0.3);
+/* 🆕 TOP 3 */
+#top3 {
+  margin-top:10px;
+  font-size:22px;
+  text-shadow:0 0 8px black;
 }
-
-.lose {
-  color:#ff4444;
-  text-shadow:
-    0 0 6px rgba(255,80,80,0.8),
-    0 0 12px rgba(255,80,80,0.5),
-    0 0 18px rgba(255,80,80,0.3);
-}
-  
 </style>
 </head>
 
@@ -298,7 +246,7 @@ body {
 </div>
 
 <!-- BOSS -->
-<div class="text introAnim" id="boss" style="display:none">
+<div id="boss" style="display:none">
   <div class="textGold" id="bossName"></div>
 
   <div id="bar">
@@ -327,6 +275,10 @@ body {
     <img id="endBoss">
     <div class="text" id="result"></div>
     <div class="text" id="resultSub"></div>
+
+    <!-- 🆕 TOP 3 -->
+    <div id="top3" class="text"></div>
+
     <div class="text" id="finalTimer"></div>
   </div>
 </div>
@@ -377,7 +329,6 @@ return;
 }
 
 if(data.active&&data.bossSpawned){
-
 intro.style.display="none";
 boss.style.display="block";
 
@@ -410,6 +361,14 @@ result.className="win";
 result.innerText="☠️ DERROTA ☠️";
 resultSub.innerText=`${data.boss} ha logrado escapar`;
 result.className="lose";
+}
+
+/* 🆕 TOP 3 */
+if(data.top3 && data.top3.length){
+const medals=["🥇","🥈","🥉"];
+top3.innerText=data.top3.map((p,i)=>
+`${medals[i]} ${p.user} ✴️ ${Math.floor(p.maxHit)}`
+).join("   ");
 }
 
 if(!finalRunning){
