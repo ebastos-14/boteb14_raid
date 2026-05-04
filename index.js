@@ -154,7 +154,7 @@ async function startEvent(channelRaw) {
 
     client.say(
       normalizeChannel(channel),
-    `👹 ${match.bossName} ha aparecido 👹`
+    `👹 ${match.bossName} ha aparecido ❤️ ${10 * players * 0.3} 👹`
     );
 
     runClock(channel);
