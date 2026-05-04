@@ -66,7 +66,7 @@ async function getViewerCount(channel) {
 
     // OFFLINE
     if (!data.data || data.data.length === 0) {
-      return 10;
+      return 100;
     }
 
     // ONLINE → valor exacto
@@ -213,7 +213,7 @@ client.on('message', (channel, tags, message, self) => {
 
   if (match.damageLog[user].length >= MAX_ATTACKS) return;
 
-  const dmg = (10 + 5) * (0.5 + Math.random());
+  const dmg = (10 + 4) * (0.5 + Math.random());
 
   match.damageLog[user].push(dmg);
   match.bossHP -= dmg;
