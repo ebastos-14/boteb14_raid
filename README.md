@@ -16,16 +16,6 @@ Bot para eventos interactivos en Twitch donde los viewers pueden atacar a un bos
 
 ---
 
-## ⚙️ Configuración clave
-
-```js
-const ACTIVE_PERCENT = 0.3;
-const AVG_DAMAGE = 15;
-const MAX_ATTACKS = 1;
-```
-
----
-
 ## 🎮 Comandos en chat
 
 * `!attack` → atacar al boss
