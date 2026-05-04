@@ -306,7 +306,7 @@ app.get('/start', async (req, res) => {
 
 // ===============================
 app.get('/state', (req, res) => {
-  const top3 = buildTop3(match);
+
   const channel = cleanChannel(req.query.channel || "");
   const match = matches[channel];
 
@@ -329,16 +329,16 @@ app.get('/state', (req, res) => {
       timeLeft: remaining
     });
   }
-  
+
   return res.json({
     active:false,
     finished:true,
     boss: match.bossName,
     result: match.bossHP <= 0 ? "win" : "lose",
-    endTime: match.endTime,
-    top3
+    endTime: match.endTime
   });
 });
+
 // ===============================
 app.listen(process.env.PORT || 3000, () => {
   console.log("🔥 BOT CON VIEWERS EXACTOS LISTO 🔥");
