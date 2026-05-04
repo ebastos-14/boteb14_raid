@@ -142,11 +142,11 @@ async function startEvent(channelRaw) {
 
   match.bossName = bosses[Math.floor(Math.random() * bosses.length)];
   match.bossMaxHP = 10 * players * 0.3;
-  match.bossHP = players * 0.3;
+  match.bossHP = 10 * players * 0.3;
   match.startTime = Date.now();
-
-  client.say(normalizeChannel(channel), `${players*0.3}`);
-  client.say(normalizeChannel(channel), `${10*players*0.3}`);
+  
+  client.say(normalizeChannel(channel), "📢 Esta por iniciar un evento 📢");
+  client.say(normalizeChannel(channel), "💥 Recuerda participar usando !attack 💥");
 
   setTimeout(() => {
 
@@ -154,7 +154,7 @@ async function startEvent(channelRaw) {
 
     client.say(
       normalizeChannel(channel),
-      `T3-5`
+    `👹 ${match.bossName} ha aparecido 👹`
     );
 
     runClock(channel);
@@ -181,7 +181,9 @@ function runClock(channelRaw) {
     const sec = Math.ceil(remaining / 1000);
 
     if ([30, 20, 10].includes(sec)) {
-      client.say(normalizeChannel(channel), `T6`);
+      client.say(normalizeChannel(channel),
+        `⏱️ ${sec}s - 👹 ${match.bossName} - ❤️ ${Math.floor(match.bossHP)}/${match.bossMaxHP}`
+      );
     }
 
     if (sec <= 0) {
@@ -254,17 +256,19 @@ function finishMatch(channelRaw, win) {
 
   const target = normalizeChannel(channel);
 
-  if (win) {
-    client.say(target, `T7`);
+    if (win) {
+    client.say(target, `🏆 Victoria - Hemos vencido a 👹 ${match.bossName} 🏆`);
   } else {
-    client.say(target, `T8`);
+    client.say(target, `☠️ ${match.bossName} ha escapado ☠️`);
   }
 
   const top3 = buildTop3(match);
 
   const text =
-    `T9` +
-    top3.map(() => `T10`).join(" - ");
+    `📊 ${Object.keys(match.damageLog).length} Participantes - ` +
+    top3.map((p, i) =>
+      `${["🥇","🥈","🥉"][i]} ${p.user} ✴️ ${Math.floor(p.maxHit)}`
+    ).join(" - ");
 
   client.say(target, text);
 }
