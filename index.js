@@ -142,11 +142,11 @@ async function startEvent(channelRaw) {
 
   match.bossName = bosses[Math.floor(Math.random() * bosses.length)];
   match.bossMaxHP = players;
-  match.bossHP = players * 0.3;
+  match.bossHP = players;
   match.startTime = Date.now();
 
-  client.say(normalizeChannel(channel), "T1");
-  client.say(normalizeChannel(channel), "T2");
+  client.say(normalizeChannel(channel), `$(players)`);
+  client.say(normalizeChannel(channel), `"(players)`);
 
   setTimeout(() => {
 
