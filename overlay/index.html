@@ -34,14 +34,15 @@ body {
 }
 
 /* TEXTO DORADO */
-.introTextAnim {
+.textGold {
   color:#FFA500;
   text-shadow:
     0 0 5px #FFD700,
     0 0 10px #FFD700,
     0 0 20px #FFD700;
-  animation: introFade 0.6s ease-out;
 }
+
+/* ANIMACION DE CAIDA */
 .introAnim { 
   animation: introFade 0.6s ease-out;
 }
@@ -262,7 +263,7 @@ body {
 
 <!-- INTRO -->
 <div id="intro">
-  <div class="text introTextAnim">📢 Esta por iniciar un evento 📢</div>
+  <div class="text introGold">📢 Esta por iniciar un evento 📢</div>
   <div class="text">💥 Recuerda participar usando !attack 💥</div>
 
   <div class="slot">
@@ -275,10 +276,10 @@ body {
 </div>
 
 <!-- BOSS -->
-<div id="boss" style="display:none">
-  <div class="text introTextAnim" id="bossName"></div>
+<div class="introTextAnim" id="boss" style="display:none">
+  <div class="textGold" id="bossName"></div>
 
-  <div class="introAnim" id="bar">
+  <div id="bar">
     <div id="hp"></div>
     <div id="segments">
       <div class="segment"></div>
@@ -289,13 +290,13 @@ body {
     </div>
   </div>
 
-  <div class="text" id="hpText"></div>
+  <div id="hpText"></div>
 
-  <div class="introAnim" id="bossArea">
+  <div id="bossArea">
     <img id="bossImg">
   </div>
 
-  <div class="text introAnim" id="timer2"></div>
+  <div id="timer2"></div>
 </div>
 
 <!-- FINAL -->
