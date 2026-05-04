@@ -42,6 +42,9 @@ body {
     0 0 20px #FFD700;
   animation: introFade 0.6s ease-out;
 }
+.introAnim { 
+  animation: introFade 0.6s ease-out;
+}
 
 @keyframes introFade {
   from { opacity:0; transform: translateY(-15px); }
@@ -66,7 +69,7 @@ body {
   display:flex;
   align-items:center;
   justify-content:center;
-  animation: spin 6s linear infinite;
+  animation: spin 3s linear infinite;
 }
 
 #portalImg {
@@ -275,7 +278,7 @@ body {
 <div id="boss" style="display:none">
   <div class="text introTextAnim" id="bossName"></div>
 
-  <div id="bar">
+  <div class="introAnim" id="bar">
     <div id="hp"></div>
     <div id="segments">
       <div class="segment"></div>
@@ -288,11 +291,11 @@ body {
 
   <div class="text" id="hpText"></div>
 
-  <div id="bossArea">
+  <div class="introAnim" id="bossArea">
     <img id="bossImg">
   </div>
 
-  <div class="text" id="timer2"></div>
+  <div class="text introAnim" id="timer2"></div>
 </div>
 
 <!-- FINAL -->
