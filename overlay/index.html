@@ -48,7 +48,7 @@ body {
     0 0 20px #00FFFF;
 }
 
-/* TEXTO DORADO */
+  /* TEXTO DORADO */
 .textGold {
   color:#FFA500;
   text-shadow:
@@ -77,8 +77,7 @@ body {
   margin:0 auto;
   position:relative;
 }
-
-/* ZOOM IN */
+/* 🔥 ZOOM IN REUTILIZABLE */
 .zoomIn {
   animation: zoomInAnim 0.8s ease-out forwards;
 }
@@ -95,7 +94,7 @@ body {
     filter: blur(0);
   }
 }
-
+  
 /* PORTAL */
 #portalWrapper {
   width:100%;
@@ -138,13 +137,16 @@ body {
   100% { filter: drop-shadow(0 0 5px #a8e1f1); }
 }
 
-@keyframes glowBoss {
+  @keyframes glowBoss {
   0% { filter: drop-shadow(0 0 5px #ffebba); }
   50% { filter: drop-shadow(0 0 20px #ffebba); }
   100% { filter: drop-shadow(0 0 5px #ffebba); }
 }
 
-/* BARRA VIDA */
+/* =========================
+   BARRA DE VIDA
+========================= */
+
 #bar {
   width:260px;
   height:12px;
@@ -168,6 +170,8 @@ body {
 
 #segments {
   position:absolute;
+  top:0;
+  left:0;
   width:100%;
   height:100%;
   display:flex;
@@ -182,20 +186,70 @@ body {
 .segment:not(:last-child)::after {
   content:"";
   position:absolute;
+  top:0;
   right:0;
   width:2px;
   height:100%;
   background:#000;
 }
 
-#hpText { margin-top:5px; }
+/* ========================= */
 
-#bossName { font-size:24px; }
+#hpText {
+  margin-top:5px;
+}
+
+/* BOSS */
+#bossName {
+  font-size:24px;
+  margin:8px 0;
+}
 
 #bossArea {
   width:300px;
   height:300px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   position:relative;
+}
+
+#bossImg {
+  max-width:100%;
+  max-height:100%;
+  object-fit:contain;
+}
+
+/* TIMERS */
+#timer1, #timer2, #finalTimer {
+  font-size:18px;
+}
+
+/* DAÑO */
+.damage {
+  position:absolute;
+  color:#ff4444;
+  font-weight:bold;
+  font-size:22px;
+  pointer-events:none;
+  animation: floatUp 1s ease-out forwards;
+  text-shadow:0 0 6px black;
+}
+
+@keyframes floatUp {
+  0% { opacity:1; transform: translate(-50%,0); }
+  100% { opacity:0; transform: translate(-50%,-60px); }
+}
+
+/* SHAKE */
+.shake {
+  animation: shakeAnim 0.25s linear;
+}
+
+@keyframes shakeAnim {
+  0% { transform:translate(0,0); }
+  50% { transform:translate(4px,-2px); }
+  100% { transform:translate(0,0); }
 }
 
 /* FINAL */
@@ -206,6 +260,7 @@ body {
   display:flex;
   align-items:center;
   justify-content:center;
+  background: transparent;
 }
 
 #endContainer {
@@ -213,7 +268,6 @@ body {
   text-align:center;
 }
 
-/* 🔥 BOSS FONDO */
 #endBoss {
   position:absolute;
   top:50%;
@@ -222,27 +276,27 @@ body {
   width:400px;
   filter: blur(2px) brightness(0.7);
   pointer-events:none;
-  z-index:0;
 }
 
-/* 🔥 TEXTOS ENCIMA */
-#result,
-#resultSub,
-#finalTimer {
-  position:relative;
-  z-index:1;
+#result {
+  font-size:40px;
 }
-
-#result { font-size:40px; }
-
 .win {
   color:#00ff99;
+  text-shadow:
+    0 0 6px rgba(0,255,150,0.8),
+    0 0 12px rgba(0,255,150,0.5),
+    0 0 18px rgba(0,255,150,0.3);
 }
 
 .lose {
   color:#ff4444;
+  text-shadow:
+    0 0 6px rgba(255,80,80,0.8),
+    0 0 12px rgba(255,80,80,0.5),
+    0 0 18px rgba(255,80,80,0.3);
 }
-
+  
 </style>
 </head>
 
@@ -250,6 +304,7 @@ body {
 
 <div id="screen">
 
+<!-- INTRO -->
 <div id="intro">
   <div class="text textCian">📢 Estable v3 - v1-1 📢</div>
   <div class="text">💥 Recuerda participar usando !attack 💥</div>
@@ -261,8 +316,11 @@ body {
       </div>
     </div>
   </div>
+
+  <div class="text" id="timer1"></div>
 </div>
 
+<!-- BOSS -->
 <div id="boss" style="display:none">
   <div class="textGold introAnim" id="bossName"></div>
 
@@ -279,13 +337,14 @@ body {
 
   <div class="text introAnim" id="hpText"></div>
 
-  <div id="bossArea">
+  <div class="text introAnim" id="bossArea">
     <img id="bossImg">
   </div>
 
-  <div class="text introAnim" id="timer2"></div>
+  <div class= "text introAnim" id="timer2"></div>
 </div>
 
+<!-- FINAL -->
 <div id="end" style="display:none">
   <div id="endContainer">
     <img id="endBoss">
@@ -313,12 +372,45 @@ const bossSprites={
 let lastHP=null;
 let finalRunning=false;
 
+function spawnDamage(d){
+const el=document.createElement("div");
+el.className="damage";
+el.innerText=Math.floor(d);
+el.style.left=`${50+Math.random()*20-10}%`;
+el.style.top=`${50+Math.random()*20-10}%`;
+bossArea.appendChild(el);
+setTimeout(()=>el.remove(),1000);
+}
+
+function shakeBoss(){
+bossImg.classList.remove("shake");
+void bossImg.offsetWidth;
+bossImg.classList.add("shake");
+}
+
 setInterval(async()=>{
 const res=await fetch(`https://boteb14-raid.onrender.com/state?channel=${channel}&t=${Date.now()}`);
 const data=await res.json();
 
+if(!data.active&&!data.finished){
+intro.style.display="block";
+boss.style.display="none";
+end.style.display="none";
+return;
+}
+
 if(data.active&&data.bossSpawned){
+
+intro.style.display="none";
 boss.style.display="block";
+
+if(lastHP&&data.hp<lastHP){
+spawnDamage(lastHP-data.hp);
+shakeBoss();
+}
+
+lastHP=data.hp;
+
 bossName.innerText=data.boss;
 hp.style.width=(data.hp/data.maxHP)*100+"%";
 hpText.innerText=`${data.hp}/${data.maxHP}`;
@@ -327,15 +419,34 @@ timer2.innerText=`⏱️ ${data.timeLeft}`;
 }
 
 if(data.finished){
+intro.style.display="none";
+boss.style.display="none";
 end.style.display="flex";
+
 endBoss.src=bossSprites[data.boss];
 
-result.innerText=data.result==="win"?"🏆 VICTORIA 🏆":"☠️ DERROTA ☠️";
-resultSub.innerText=data.result==="win"
-?`Hemos vencido a ${data.boss}`
-:`${data.boss} ha logrado escapar`;
+if(data.result==="win"){
+result.innerText="🏆 VICTORIA 🏆";
+resultSub.innerText=`Hemos vencido a ${data.boss}`;
+result.className="win";
+}else{
+result.innerText="☠️ DERROTA ☠️";
+resultSub.innerText=`${data.boss} ha logrado escapar`;
+result.className="lose";
+}
 
-result.className=data.result==="win"?"win":"lose";
+if(!finalRunning){
+finalRunning=true;
+let t=3;
+const i=setInterval(()=>{
+finalTimer.innerText=`⏱️ ${t}`;
+t--;
+if(t<0){
+clearInterval(i);
+location.href=`./blank.html?channel=${channel}`;
+}
+},1000);
+}
 }
 
 },500);
