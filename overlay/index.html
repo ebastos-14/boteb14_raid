@@ -94,7 +94,7 @@ body {
   width:100%;
   height:100%;
   object-fit:contain;
-  animation: glowBoss 6s ease-in-out infinite;
+  animation: glowBoss 2s ease-in-out infinite;
 }
 
 @keyframes spin {
@@ -237,6 +237,7 @@ body {
   display:flex;
   align-items:center;
   justify-content:center;
+  background: rgba(0,0,0,0.7);
 }
 
 #endContainer {
@@ -284,7 +285,7 @@ body {
 
 <!-- INTRO -->
 <div id="intro">
-  <div class="text textCian">📢 Esta por iniciar un evento 📢</div>
+  <div class="text textCian">📢 coso por iniciar un evento 📢</div>
   <div class="text">💥 Recuerda participar usando !attack 💥</div>
 
   <div class="slot">
@@ -298,7 +299,7 @@ body {
 
 <!-- BOSS -->
 <div id="boss" style="display:none">
-  <div class="text introAnim textGold" id="bossName"></div>
+  <div class="textGold" id="bossName"></div>
 
   <div id="bar">
     <div id="hp"></div>
@@ -311,13 +312,13 @@ body {
     </div>
   </div>
 
-  <div class="text introAnim" id="hpText"></div>
+  <div id="hpText"></div>
 
   <div id="bossArea">
     <img id="bossImg">
   </div>
 
-  <div class="text introAnim" id="timer2"></div>
+  <div id="timer2"></div>
 </div>
 
 <!-- FINAL -->
