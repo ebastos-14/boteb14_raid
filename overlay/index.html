@@ -90,6 +90,14 @@ body {
              glowPortal 2s ease-in-out infinite;
 }
 
+#bossImg {
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  animation: pulse 2s ease-in-out infinite,
+             glowBoss 2s ease-in-out infinite;
+}
+
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -102,6 +110,12 @@ body {
 }
 
 @keyframes glowPortal {
+  0% { filter: drop-shadow(0 0 5px #a8e1f1); }
+  50% { filter: drop-shadow(0 0 20px #a8e1f1); }
+  100% { filter: drop-shadow(0 0 5px #a8e1f1); }
+}
+
+  @keyframes glowBoss {
   0% { filter: drop-shadow(0 0 5px #ffebba); }
   50% { filter: drop-shadow(0 0 20px #ffebba); }
   100% { filter: drop-shadow(0 0 5px #ffebba); }
