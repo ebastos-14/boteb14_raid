@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+
+<style>
+body {
+  margin:0;
+  font-family: Arial;
+  background:#111; /* 🔥 fondo visible para OBS */
+  color:white;
+}
+
+/* CONTENEDOR */
+#screen {
+  width:100vw;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  outline:2px dashed #444; /* guía visual */
+}
+
+/* TEXTO */
+.text {
+  font-size:20px;
+  margin:4px 0;
+}
+
+/* BOSS NAME */
+#bossName {
+  font-size:24px;
+  margin-bottom:10px;
+  color:#FFA500;
+}
+
+/* BARRA VIDA */
+#bar {
+  width:260px;
+  height:12px;
+  position:relative;
+  background:#2a0000;
+  border:2px solid #999;
+  margin-bottom:10px;
+}
+
+#hp {
+  height:100%;
+  width:70%; /* ejemplo */
+  background:red;
+}
+
+#segments {
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  display:flex;
+}
+
+.segment {
+  flex:1;
+  border-right:1px solid black;
+}
+
+/* BOSS AREA */
+#bossArea {
+  width:300px;
+  height:300px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:2px dashed red; /* 🔥 área real */
+  margin-bottom:10px;
+}
+
+#bossImg {
+  max-width:100%;
+  max-height:100%;
+}
+
+/* TIMER */
+#timer {
+  font-size:18px;
+  margin-top:5px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div id="screen">
+
+  <div id="bossName">BOSS NAME</div>
+
+  <div id="bar">
+    <div id="hp"></div>
+    <div id="segments">
+      <div class="segment"></div>
+      <div class="segment"></div>
+      <div class="segment"></div>
+      <div class="segment"></div>
+      <div class="segment"></div>
+    </div>
+  </div>
+
+  <div class="text">5000 / 10000 HP</div>
+
+  <div id="bossArea">
+    <img id="bossImg" src="./Basilisco.png">
+  </div>
+
+  <div id="timer">⏱️ 30</div>
+
+</div>
+
+</body>
+</html>
