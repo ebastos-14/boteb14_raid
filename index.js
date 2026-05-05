@@ -301,6 +301,8 @@ function finishMatch(channelRaw, win) {
       `${["🥇","🥈","🥉"][i]} ${p.user} ✴️ ${Math.floor(p.maxHit)}`
     ).join(" - ");
 
+  
+  client.say(normalizeChannel(channel), "📢  📢");
   client.say(target, text);
 }
 
