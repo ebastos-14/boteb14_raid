@@ -13,7 +13,7 @@ const CHANNEL_TOKENS = {
   "jaciitv": process.env.JACIITV_TOKEN,
   "customtemptoken1": process.env.TEMP1_TOKEN,
   "customtemptoken2": process.env.TEMP2_TOKEN,
-  "kuruogg": process.env.MRRYDEN_TOKEN,
+  "customtemptoken2": process.env.TEMP3_TOKEN,
   "customtemptoken4": process.env.TEMP4_TOKEN,
   "customtemptoken5": process.env.TEMP5_TOKEN,
   "customtemptoken6": process.env.TEMP6_TOKEN
