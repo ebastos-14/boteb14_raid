@@ -20,7 +20,7 @@ const CHANNEL_TOKENS = {
 };
 
 // ===============================
-const MAX_ATTACKS = 100;
+const MAX_ATTACKS = 1;
 const START_COOLDOWN = 10000;
 let lastStart = {};
 
@@ -65,7 +65,7 @@ async function getViewerCount(channel) {
     const data = await res.json();
 
     if (!data.data || data.data.length === 0) {
-      return 100; // offline fallback
+      return 11.905; // offline fallback
     }
 
     return data.data[0].viewer_count;
@@ -143,7 +143,7 @@ async function startEvent(channelRaw) {
   match.startTime = Date.now();
   
   client.say(normalizeChannel(channel), "📢 Evento en camino... 📢");
-  client.say(normalizeChannel(channel), "💥 Recuerda participar usando !attack 💥");
+  client.say(normalizeChannel(channel), "💥 Recuerda participar usando - !attack 💥");
 
   setTimeout(() => {
 
@@ -151,7 +151,7 @@ async function startEvent(channelRaw) {
 
     client.say(
       normalizeChannel(channel),
-      `👹 ${match.bossName} ha aparecido ❤️ ${Math.floor(match.bossMaxHP)} 👹`
+      `⏱️ 40s - 👹 ${match.bossName} ha aparecido ❤️ ${Math.floor(match.bossMaxHP)} 👹`
     );
 
     runClock(channel);
