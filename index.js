@@ -296,13 +296,12 @@ function finishMatch(channelRaw, win) {
   const top3 = buildTop3(match);
 
   const text =
-    `📊 ${Object.keys(match.damageLog).length} Participantes - ` +
     top3.map((p, i) =>
       `${["🥇","🥈","🥉"][i]} ${p.user} ✴️ ${Math.floor(p.maxHit)}`
     ).join(" - ");
 
   
-  client.say(normalizeChannel(channel), "📢  📢");
+  client.say(normalizeChannel(channel), `📊 ${Object.keys(match.damageLog).length} Participantes - `);
   client.say(target, text);
 }
 
