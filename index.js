@@ -13,7 +13,7 @@ const CHANNEL_TOKENS = {
   "jaciitv": process.env.JACIITV_TOKEN,
   "customtemptoken1": process.env.TEMP1_TOKEN,
   "customtemptoken2": process.env.TEMP2_TOKEN,
-  "customtemptoken2": process.env.TEMP3_TOKEN,
+  "customtemptoken3": process.env.TEMP3_TOKEN,
   "customtemptoken4": process.env.TEMP4_TOKEN,
   "customtemptoken5": process.env.TEMP5_TOKEN,
   "customtemptoken6": process.env.TEMP6_TOKEN
@@ -64,12 +64,10 @@ async function getViewerCount(channel) {
 
     const data = await res.json();
 
-    // OFFLINE
     if (!data.data || data.data.length === 0) {
-      return 100;
+      return 100; // offline fallback
     }
 
-    // ONLINE → valor exacto
     return data.data[0].viewer_count;
 
   } catch (err) {
@@ -135,7 +133,6 @@ async function startEvent(channelRaw) {
   match.damageLog = {};
   match.endTime = 0;
 
-  // 👥 PLAYERS DINÁMICOS (EXACTOS)
   const players = await getViewerCount(channel);
 
   console.log("PLAYERS =", players);
@@ -154,7 +151,7 @@ async function startEvent(channelRaw) {
 
     client.say(
       normalizeChannel(channel),
-    `👹 ${match.bossName} ha aparecido ❤️ ${10 * players * 0.3} 👹`
+      `👹 ${match.bossName} ha aparecido ❤️ ${Math.floor(match.bossMaxHP)} 👹`
     );
 
     runClock(channel);
@@ -182,7 +179,7 @@ function runClock(channelRaw) {
 
     if ([30, 20, 10].includes(sec)) {
       client.say(normalizeChannel(channel),
-        `⏱️ ${sec}s - 👹 ${match.bossName} - ❤️ ${Math.floor(match.bossHP)}/${match.bossMaxHP}`
+        `⏱️ ${sec}s - 👹 ${match.bossName} - ❤️ ${Math.floor(match.bossHP)}/${Math.floor(match.bossMaxHP)}`
       );
     }
 
@@ -196,15 +193,43 @@ function runClock(channelRaw) {
 }
 
 // ===============================
-client.on('message', (channel, tags, message, self) => {
+// 💬 CHAT
+client.on('message', async (channel, tags, message, self) => {
   if (self) return;
 
   const key = cleanChannel(channel);
   const match = getMatch(key);
+  const msg = message.toLowerCase().trim();
 
+  // ===============================
+  // 🚀 !START SOLO MOD / BROADCASTER
+  if (msg === '!start') {
+
+    const isBroadcaster = tags.badges?.broadcaster === '1';
+    const isMod = tags.mod;
+
+    if (!isBroadcaster && !isMod) return;
+
+    if (lastStart[key] && Date.now() - lastStart[key] < START_COOLDOWN) {
+      client.say(channel, "⏳ El evento está en cooldown");
+      return;
+    }
+
+    lastStart[key] = Date.now();
+
+    const started = await startEvent(key);
+
+    if (!started) {
+      client.say(channel, "⚠️ Ya hay un evento en curso");
+    }
+
+    return;
+  }
+
+  // ===============================
+  // ⚔️ ATAQUES
   if (!match.active || match.finished || !match.bossSpawned) return;
 
-  const msg = message.toLowerCase().trim();
   if (msg !== '!attack' && msg !== '!a' && msg !== '!sorteo' && msg !== '!sorteotv') return;
 
   const user = tags.username;
@@ -256,7 +281,7 @@ function finishMatch(channelRaw, win) {
 
   const target = normalizeChannel(channel);
 
-    if (win) {
+  if (win) {
     client.say(target, `🏆 Victoria - Hemos vencido a 👹 ${match.bossName} 🏆`);
   } else {
     client.say(target, `☠️ ${match.bossName} ha escapado ☠️`);
@@ -325,7 +350,7 @@ app.get('/state', (req, res) => {
       bossSpawned: match.bossSpawned,
       boss: match.bossName,
       hp: Math.floor(match.bossHP),
-      maxHP: match.bossMaxHP,
+      maxHP: Math.floor(match.bossMaxHP),
       timeLeft: remaining
     });
   }
