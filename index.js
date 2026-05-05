@@ -205,27 +205,33 @@ client.on('message', async (channel, tags, message, self) => {
   // 🚀 !START SOLO MOD / BROADCASTER
   if (msg === '!start') {
 
-    const isBroadcaster = tags.badges?.broadcaster === '1';
-    const isMod = tags.mod;
+  const isBroadcaster = tags.badges?.broadcaster === '1';
+  const isMod = tags.mod;
 
-    if (!isBroadcaster && !isMod) return;
-
-    if (lastStart[key] && Date.now() - lastStart[key] < START_COOLDOWN) {
-      client.say(channel, "⏳ El evento está en cooldown");
+  if (!isBroadcaster && !isMod) return;
+    
+      try {
+        await client.join(channel); // 🔥 FORZAR JOIN
+    
+        if (lastStart[key] && Date.now() - lastStart[key] < START_COOLDOWN) {
+          await client.say(channel, "⏳ El evento está en cooldown");
+          return;
+        }
+    
+        lastStart[key] = Date.now();
+    
+        const started = await startEvent(key);
+    
+        if (!started) {
+          await client.say(channel, "⚠️ Ya hay un evento en curso");
+        }
+    
+      } catch (err) {
+        console.error("ERROR START:", err);
+      }
+    
       return;
     }
-
-    lastStart[key] = Date.now();
-
-    const started = await startEvent(key);
-
-    if (!started) {
-      client.say(channel, "⚠️ Ya hay un evento en curso");
-    }
-
-    return;
-  }
-
   // ===============================
   // ⚔️ ATAQUES
   if (!match.active || match.finished || !match.bossSpawned) return;
