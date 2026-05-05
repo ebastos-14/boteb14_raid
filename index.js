@@ -145,7 +145,7 @@ async function startEvent(channelRaw) {
   match.bossHP = 10 * players * 0.3;
   match.startTime = Date.now();
   
-  client.say(normalizeChannel(channel), "📢 Esta por iniciar un evento 📢");
+  client.say(normalizeChannel(channel), "📢 Evento en camino... 📢");
   client.say(normalizeChannel(channel), "💥 Recuerda participar usando !attack 💥");
 
   setTimeout(() => {
