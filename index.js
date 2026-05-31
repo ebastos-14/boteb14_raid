@@ -20,7 +20,7 @@ const CHANNEL_TOKENS = {
 };
 
 // ===============================
-const MAX_ATTACKS = 1;
+const MAX_ATTACKS = 100;
 const START_COOLDOWN = 10000;
 let lastStart = {};
 
